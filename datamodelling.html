@@ -266,7 +266,7 @@ footer{color:var(--muted);font-size:14px;padding-top:32px}
   "land": "Nederland",
   "scores": [ { "score": 12450, "level": 7 }, { "score": 15890, "level": 9 } ]
 }</code></pre></div>
-  <p>Een SQL-database splitst dit in twee tabellen: één met gebruikers en één met scores, gekoppeld via een <code>gebruiker_id</code>. In hoofdstuk 5 importeer je precies zo'n JSON-bestand in twee SQL-tabellen.</p>
+  <p>Een SQL-database splitst dit in twee tabellen: één met gebruikers en één met scores, gekoppeld via een <code>gebruiker_id</code>. In hoofdstuk 5 maak je precies deze twee tabellen.</p>
 
   <div class="practice">
     <h3>Oefenen</h3>
@@ -423,7 +423,7 @@ docker start mysql-db</code></pre></div>
       <tr><td><strong>Beekeeper</strong></td><td>Kies <em>MySQL</em> als type en vul de gegevens in.</td><td>Knop <em>Run</em>, of selecteer tekst en voer alleen die uit.</td></tr>
     </tbody>
   </table></div>
-  <div class="note"><strong>Script of statement?</strong><p>In hoofdstuk 5 en 10 voer je een script uit met meerdere regels die op elkaar voortbouwen. Voer die uit als heel script, niet regel voor regel in losse tabbladen.</p></div>
+  <div class="note"><strong>Script of statement?</strong><p>In hoofdstuk 5 en 10 voer je een SQL-bestand uit met opdrachten die op elkaar voortbouwen. Voer dat uit als heel script, niet regel voor regel.</p></div>
 
   <div class="practice">
     <h3>Oefenen</h3>
@@ -494,7 +494,7 @@ LIMIT    aantal;           -- hoeveel rijen?</code></pre></div>
 <section class="ch" id="h5">
   <div class="ch-head"><span class="ch-num">05</span></div>
   <h2>Je eerste database: highscores</h2>
-  <p class="intro">Je bouwt de database achter het leaderboard van de game <em>Pixel Runner</em>: tien spelers en hun 27 gespeelde potjes. De gegevens krijg je als JSON-bestand, zoals ze uit een app of API zouden komen.</p>
+  <p class="intro">Je bouwt de database achter het leaderboard van de game <em>Pixel Runner</em>: tien spelers en hun 27 gespeelde potjes. Je krijgt een SQL-bestand dat de database bouwt en vult.</p>
 
   <figure class="fig">
     <svg viewBox="0 0 640 200" role="img" aria-label="ERD: één gebruiker heeft veel highscores">
@@ -521,37 +521,22 @@ LIMIT    aantal;           -- hoeveel rijen?</code></pre></div>
     <figcaption>Eén gebruiker heeft veel highscores; elke highscore hoort bij precies één gebruiker. Dat heet een 1-op-veel-relatie.</figcaption>
   </figure>
 
-  <h3>Stap 1 · Download het bestand</h3>
+  <h3>Stap 1 · Download game.sql</h3>
   <div class="dl">
-    <button class="btn" type="button" data-file="highscore.json">Download highscore.json <span class="size">6 kB</span></button>
-    <span class="dl-msg" data-msg-for="highscore.json"></span>
+    <a class="btn" href="game.sql" download>Download game.sql <span class="size">3 kB</span></a>
+    <span class="dl-msg">Werkt de knop niet? Haal het bestand van Canvas, of kopieer de inhoud hieronder.</span>
   </div>
-  <p>Het bestand bevat twee lijsten: <code>gebruikers</code> en <code>highscores</code>. Zo ziet het begin eruit:</p>
-<div class="code"><pre><code class="json">{
-  "gebruikers": [
-    { "gebruiker_id": 1, "gebruikersnaam": "PixelPia", "email": "pia@example.com",
-      "land": "Nederland", "aangemaakt_op": "2026-01-12" },
-    ...
-  ],
-  "highscores": [
-    { "highscore_id": 1, "gebruiker_id": 1, "score": 12450, "level": 7,
-      "gespeeld_op": "2026-09-01 19:12:00" },
-    ...
-  ]
-}</code></pre></div>
-
-  <h3>Stap 2 · Zet het bestand in de container</h3>
-  <p>MySQL draait in een afgesloten container en kan je Downloads-map niet zien. Daarom kopieer je het bestand naar de container, in de map waar MySQL bestanden mag lezen: <code>/var/lib/mysql-files/</code>. Open een terminal in je Downloads-map en kopieer:</p>
-<div class="code"><pre><code class="sh"># Windows (PowerShell)
-cd $HOME\Downloads
-# Mac
-cd ~/Downloads
-
-docker cp highscore.json mysql-db:/var/lib/mysql-files/highscore.json</code></pre></div>
-
-  <h3>Stap 3 · Maak de database en de tabellen</h3>
-  <p>Voer dit uit in je SQL-programma. Wat hier precies staat, leer je in hoofdstuk 7. Nu mag je het kopiëren.</p>
-<div class="code"><pre><code class="sql">CREATE DATABASE game;
+  <p>Een SQL-bestand is een gewoon tekstbestand met SQL-opdrachten onder elkaar. Dit bestand doet drie dingen: het maakt de database <code>game</code>, het maakt de tabellen <code>gebruiker</code> en <code>highscore</code>, en het vult ze met <code>INSERT</code>-opdrachten. Wat er precies staat, leer je in hoofdstuk 7. Nu mag je het gewoon uitvoeren.</p>
+  <details class="ans" style="margin-bottom:20px"><summary>Toon de inhoud van game.sql</summary><div>
+<div class="code"><pre><code class="sql">-- =============================================================
+-- game.sql  ·  SQL Werkplaats, hoofdstuk 5
+-- Maakt de database &#x27;game&#x27; (leaderboard van Pixel Runner) en vult hem.
+-- Voer dit bestand uit als één script.
+-- LET OP: bestaat &#x27;game&#x27; al, dan wordt hij eerst verwijderd.
+-- =============================================================
+SET NAMES utf8mb4;
+DROP DATABASE IF EXISTS game;
+CREATE DATABASE game;
 USE game;
 
 CREATE TABLE gebruiker (
@@ -569,52 +554,75 @@ CREATE TABLE highscore (
     level        INT,
     gespeeld_op  DATETIME,
     FOREIGN KEY (gebruiker_id) REFERENCES gebruiker(gebruiker_id)
-);</code></pre></div>
+);
 
-  <h3>Stap 4 · Importeer de JSON</h3>
-  <p>Voer dit uit als één script. Het werkt in elk SQL-programma, ook in de terminal.</p>
-<div class="code"><pre><code class="sql">USE game;
+INSERT INTO gebruiker (gebruiker_id, gebruikersnaam, email, land, aangemaakt_op) VALUES
+(1, &#x27;PixelPia&#x27;, &#x27;pia@example.com&#x27;, &#x27;Nederland&#x27;, &#x27;2026-01-12&#x27;),
+(2, &#x27;NoScopeNoah&#x27;, &#x27;noah@example.com&#x27;, &#x27;Nederland&#x27;, &#x27;2026-01-15&#x27;),
+(3, &#x27;LunaLag&#x27;, &#x27;luna@example.com&#x27;, &#x27;België&#x27;, &#x27;2026-02-03&#x27;),
+(4, &#x27;CaptainCrash&#x27;, &#x27;kevin@example.com&#x27;, &#x27;Nederland&#x27;, &#x27;2026-02-20&#x27;),
+(5, &#x27;Byte_Bram&#x27;, &#x27;bram@example.com&#x27;, &#x27;Nederland&#x27;, &#x27;2026-03-01&#x27;),
+(6, &#x27;ZoëZoom&#x27;, &#x27;zoe@example.com&#x27;, &#x27;België&#x27;, &#x27;2026-03-18&#x27;),
+(7, &#x27;GlitchGirl&#x27;, &#x27;sara@example.com&#x27;, &#x27;Duitsland&#x27;, &#x27;2026-04-02&#x27;),
+(8, &#x27;TurboTim&#x27;, &#x27;tim@example.com&#x27;, &#x27;Nederland&#x27;, &#x27;2026-05-09&#x27;),
+(9, &#x27;MoMoney&#x27;, &#x27;mohammed@example.com&#x27;, &#x27;Nederland&#x27;, &#x27;2026-06-21&#x27;),
+(10, &#x27;SilentSam&#x27;, &#x27;sam@example.com&#x27;, &#x27;Duitsland&#x27;, &#x27;2026-08-30&#x27;);
 
--- 1. Lees het bestand in als tekst en bewaar het in de variabele @json
-SET @json = CONVERT(LOAD_FILE('/var/lib/mysql-files/highscore.json') USING utf8mb4);
-SELECT @json IS NOT NULL AS bestand_gevonden;   -- moet 1 zijn
+INSERT INTO highscore (highscore_id, gebruiker_id, score, level, gespeeld_op) VALUES
+(1, 1, 12450, 7, &#x27;2026-09-01 19:12:00&#x27;),
+(2, 1, 15890, 9, &#x27;2026-09-05 20:45:00&#x27;),
+(3, 1, 9870, 5, &#x27;2026-09-12 16:03:00&#x27;),
+(4, 1, 18320, 10, &#x27;2026-09-20 21:30:00&#x27;),
+(5, 2, 8760, 4, &#x27;2026-09-02 15:20:00&#x27;),
+(6, 2, 11200, 6, &#x27;2026-09-09 18:44:00&#x27;),
+(7, 2, 13050, 7, &#x27;2026-09-25 22:10:00&#x27;),
+(8, 3, 21400, 12, &#x27;2026-09-03 20:00:00&#x27;),
+(9, 3, 19870, 11, &#x27;2026-09-14 19:35:00&#x27;),
+(10, 3, 23990, 13, &#x27;2026-09-28 21:05:00&#x27;),
+(11, 4, 3150, 2, &#x27;2026-09-04 14:12:00&#x27;),
+(12, 4, 4210, 2, &#x27;2026-09-06 14:55:00&#x27;),
+(13, 4, 2890, 1, &#x27;2026-09-18 13:40:00&#x27;),
+(14, 4, 5020, 3, &#x27;2026-09-27 15:15:00&#x27;),
+(15, 5, 10500, 6, &#x27;2026-09-07 17:25:00&#x27;),
+(16, 5, 14780, 8, &#x27;2026-09-21 20:18:00&#x27;),
+(17, 6, 16640, 9, &#x27;2026-09-08 19:50:00&#x27;),
+(18, 6, 17010, 9, &#x27;2026-09-16 20:22:00&#x27;),
+(19, 6, 20550, 11, &#x27;2026-09-29 21:48:00&#x27;),
+(20, 7, 7340, 4, &#x27;2026-09-10 16:30:00&#x27;),
+(21, 7, 9980, 5, &#x27;2026-09-19 17:05:00&#x27;),
+(22, 8, 25480, 14, &#x27;2026-09-11 23:15:00&#x27;),
+(23, 8, 24100, 13, &#x27;2026-09-17 22:40:00&#x27;),
+(24, 8, 26900, 15, &#x27;2026-09-30 23:55:00&#x27;),
+(25, 9, 6120, 3, &#x27;2026-09-13 12:10:00&#x27;),
+(26, 9, 0, 1, &#x27;2026-09-15 12:45:00&#x27;),
+(27, 9, 8450, 4, &#x27;2026-09-26 13:30:00&#x27;);
 
--- 2. JSON_TABLE maakt van de lijst "gebruikers" een tabel; INSERT zet die rijen erin
-INSERT INTO gebruiker (gebruiker_id, gebruikersnaam, email, land, aangemaakt_op)
-SELECT * FROM JSON_TABLE(@json, '$.gebruikers[*]' COLUMNS (
-    gebruiker_id   INT          PATH '$.gebruiker_id',
-    gebruikersnaam VARCHAR(30)  PATH '$.gebruikersnaam',
-    email          VARCHAR(100) PATH '$.email',
-    land           VARCHAR(50)  PATH '$.land',
-    aangemaakt_op  DATE         PATH '$.aangemaakt_op'
-)) AS j;
+-- Controle: 10 gebruikers en 27 highscores
+SELECT (SELECT COUNT(*) FROM gebruiker) AS gebruikers,
+       (SELECT COUNT(*) FROM highscore) AS highscores;</code></pre></div>
+  </div></details>
 
--- 3. Hetzelfde voor de lijst "highscores"
-INSERT INTO highscore (highscore_id, gebruiker_id, score, level, gespeeld_op)
-SELECT * FROM JSON_TABLE(@json, '$.highscores[*]' COLUMNS (
-    highscore_id INT      PATH '$.highscore_id',
-    gebruiker_id INT      PATH '$.gebruiker_id',
-    score        INT      PATH '$.score',
-    level        INT      PATH '$.level',
-    gespeeld_op  DATETIME PATH '$.gespeeld_op'
-)) AS j;
-
--- 4. Controle
-SELECT COUNT(*) AS gebruikers FROM gebruiker;   -- 10
-SELECT COUNT(*) AS highscores FROM highscore;   -- 27</code></pre></div>
-  <p>Zo werkt het: <code>LOAD_FILE</code> leest het bestand, <code>'$.gebruikers[*]'</code> betekent "elk item in de lijst gebruikers", en elke regel onder <code>COLUMNS</code> zegt welk JSON-veld in welke kolom komt.</p>
-
-  <div class="warn"><strong>Krijg je <code>bestand_gevonden = 0</code>?</strong><p>MySQL kan het bestand niet vinden. Controleer de bestandsnaam: je browser heeft het misschien opgeslagen als <code>highscore (1).json</code>. Controleer ook welke map MySQL mag lezen met <code>SELECT @@secure_file_priv;</code> en kopieer het bestand naar precies die map.</p></div>
-  <div class="note"><strong>Gebruik je MySQL Workbench?</strong><p>Dan kun je ook importeren met de muis: rechtsklik op een tabel → <em>Table Data Import Wizard</em> → kies het JSON-bestand. Die wizard verwacht wel één lijst per bestand. De SQL-route hierboven werkt overal.</p></div>
+  <h3>Stap 2 · Voer het bestand uit</h3>
+  <p>Je MySQL-container moet draaien. Open het bestand in je SQL-programma en voer het uit als één script.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Programma</th><th>Zo voer je een SQL-bestand uit</th></tr></thead>
+    <tbody>
+      <tr><td><strong>DBeaver</strong></td><td><em>File → Open File…</em>, kies het bestand en kies bovenaan je MySQL-verbinding. Voer het uit als script: <kbd>Alt</kbd>+<kbd>X</kbd> (Mac: <kbd>⌥</kbd>+<kbd>X</kbd>).</td></tr>
+      <tr><td><strong>Workbench</strong></td><td><em>File → Open SQL Script…</em>, kies het bestand en klik op de bliksemknop.</td></tr>
+      <tr><td><strong>Beekeeper</strong></td><td>Open een nieuw querytabblad, plak de inhoud van het bestand erin en klik op <em>Run</em>.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Onderaan het bestand staat een controle. Klopt alles, dan zie je <strong>10 gebruikers</strong> en <strong>27 highscores</strong>.</p>
+  <div class="note"><strong>Opnieuw beginnen</strong><p>Het bestand begint met <code>DROP DATABASE IF EXISTS game;</code>. Ging er iets mis, of wil je na hoofdstuk 9 met schone data verder? Voer het bestand gewoon opnieuw uit. Let op: alles wat je zelf in <code>game</code> hebt veranderd, is dan weg.</p></div>
 
   <div class="practice">
     <h3>Oefenen</h3>
     <ol class="ex">
-      <li><p>Importeer de data. Klopt je controle: 10 gebruikers en 27 highscores?</p>
-        <details class="ans"><summary>Wat als het niet klopt?</summary><div><p>Zijn de aantallen dubbel (20 en 54)? Dan heb je het script twee keer uitgevoerd. Begin opnieuw met <code>DROP DATABASE game;</code> en doe stap 3 en 4 nog eens.</p></div></details></li>
-      <li><p>Waarom moest het bestand eerst met <code>docker cp</code> de container in?</p>
-        <details class="ans"><summary>Antwoord</summary><div><p>MySQL draait in de container en ziet alleen bestanden in die container. Je laptop en de container hebben elk hun eigen bestandssysteem.</p></div></details></li>
-      <li><p>In de JSON heeft gebruiker PixelPia geen lijst met scores in zich, zoals in het NoSQL-voorbeeld van hoofdstuk 1. Hoe weet de database dan welke scores van haar zijn?</p>
+      <li><p>Voer <code>game.sql</code> uit. Klopt je controle: 10 gebruikers en 27 highscores?</p>
+        <details class="ans"><summary>Wat als het niet klopt?</summary><div><p>Zie je <code>No database selected</code> of een verbindingsfout, controleer dan of je container draait en of je bovenaan de juiste verbinding hebt gekozen. Voer het bestand daarna opnieuw uit.</p></div></details></li>
+      <li><p>In het bestand staan eerst de gebruikers en daarna pas de highscores. Waarom moet dat in die volgorde?</p>
+        <details class="ans"><summary>Antwoord</summary><div><p>Elke highscore verwijst met <code>gebruiker_id</code> naar een gebruiker. Die gebruiker moet al bestaan, anders weigert de foreign key de rij. Eerst de ouders, dan de kinderen.</p></div></details></li>
+      <li><p>In hoofdstuk 1 zat in het NoSQL-document een lijst met scores ín de speler. Hoe weet de SQL-database welke scores van PixelPia zijn?</p>
         <details class="ans"><summary>Antwoord</summary><div><p>Via de kolom <code>gebruiker_id</code> in de tabel highscore. Elke score met <code>gebruiker_id = 1</code> is van PixelPia.</p></div></details></li>
     </ol>
     <label class="donebox"><input type="checkbox" id="done-h5" data-ch="h5"> Hoofdstuk 5 klaar</label>
@@ -945,19 +953,19 @@ SELECT score FROM highscore WHERE highscore_id = 13;</code></pre></div>
     <figcaption>Klant, medewerker en locatie hebben elk een 1-op-veel-relatie met transactie. Transactie en product zijn veel-op-veel, via de koppeltabel trans_prod.</figcaption>
   </figure>
 
-  <h3>Importeren</h3>
+  <h3>De database laden</h3>
   <div class="dl">
-    <button class="btn" type="button" data-file="supermarkt.json">Download supermarkt.json <span class="size">1,9 MB</span></button>
-    <span class="dl-msg" data-msg-for="supermarkt.json"></span>
+    <a class="btn" href="supermarkt.sql" download>Download supermarkt.sql <span class="size">1 MB</span></a>
+    <span class="dl-msg">Werkt de knop niet? Haal het bestand van Canvas.</span>
   </div>
-  <p>Dezelfde route als in hoofdstuk 5. Kopieer eerst het bestand de container in:</p>
-<div class="code"><pre><code class="sh">docker cp supermarkt.json mysql-db:/var/lib/mysql-files/supermarkt.json</code></pre></div>
-  <p>Voer daarna het importscript uit als één script. Het maakt de tabellen met primary en foreign keys en vult ze. Na een paar seconden zie je de controle: 282 klanten, 12.395 transacties en 14.935 bonregels.</p>
-  <details class="ans" style="margin-bottom:20px"><summary>Toon het importscript</summary><div>
-<div class="code"><pre><code class="sql">CREATE DATABASE supermarkt;
-USE supermarkt;
-
-CREATE TABLE klanten (
+  <p>Voer het bestand uit als script, net als <code>game.sql</code> in hoofdstuk 5. Het is groter, dus het duurt een paar seconden. Onderaan zie je de controle: <strong>282 klanten, 12.395 transacties en 14.935 bonregels</strong>.</p>
+  <div class="note"><strong>Loopt je programma vast op het grote bestand?</strong><p>Laad het dan via de terminal. Ga naar je Downloads-map en typ:</p>
+<div class="code"><pre><code class="sh">docker cp supermarkt.sql mysql-db:/tmp/supermarkt.sql
+docker exec -it mysql-db mysql -u root -p</code></pre></div>
+<p>Typ je wachtwoord, en daarna:</p>
+<div class="code"><pre><code class="sql">SOURCE /tmp/supermarkt.sql;</code></pre></div></div>
+  <details class="ans" style="margin-bottom:20px"><summary>Toon de tabellen uit supermarkt.sql</summary><div>
+<div class="code"><pre><code class="sql">CREATE TABLE klanten (
     klant_id   INT PRIMARY KEY,
     voornaam   VARCHAR(50),
     achternaam VARCHAR(50),
@@ -1006,66 +1014,8 @@ CREATE TABLE trans_prod (
     PRIMARY KEY (trans_id, prod_id),
     FOREIGN KEY (trans_id) REFERENCES transactie(trans_id),
     FOREIGN KEY (prod_id)  REFERENCES producten(product_id)
-);
-
-SET @json = CONVERT(LOAD_FILE('/var/lib/mysql-files/supermarkt.json') USING utf8mb4);
-SELECT @json IS NOT NULL AS bestand_gevonden;
-
-INSERT INTO klanten
-SELECT * FROM JSON_TABLE(@json, '$.klanten[*]' COLUMNS (
-    klant_id   INT          PATH '$.klant_id',
-    voornaam   VARCHAR(50)  PATH '$.voornaam',
-    achternaam VARCHAR(50)  PATH '$.achternaam',
-    adres      VARCHAR(100) PATH '$.adres',
-    woonplaats VARCHAR(50)  PATH '$.woonplaats',
-    geb_datum  DATE         PATH '$.geb_datum'
-)) AS j;
-
-INSERT INTO producten
-SELECT * FROM JSON_TABLE(@json, '$.producten[*]' COLUMNS (
-    product_id   INT          PATH '$.product_id',
-    naam         VARCHAR(100) PATH '$.naam',
-    merk         VARCHAR(50)  PATH '$.merk',
-    categorie    VARCHAR(50)  PATH '$.categorie',
-    verkoopprijs DECIMAL(5,2) PATH '$.verkoopprijs',
-    inkoopprijs  DECIMAL(5,2) PATH '$.inkoopprijs',
-    leverancier  VARCHAR(50)  PATH '$.leverancier'
-)) AS j;
-
-INSERT INTO medewerkers
-SELECT * FROM JSON_TABLE(@json, '$.medewerkers[*]' COLUMNS (
-    mdw_id     INT         PATH '$.mdw_id',
-    voornaam   VARCHAR(50) PATH '$.voornaam',
-    achternaam VARCHAR(50) PATH '$.achternaam'
-)) AS j;
-
-INSERT INTO locatie
-SELECT * FROM JSON_TABLE(@json, '$.locatie[*]' COLUMNS (
-    loc_id INT          PATH '$.loc_id',
-    naam   VARCHAR(100) PATH '$.naam',
-    plaats VARCHAR(50)  PATH '$.plaats'
-)) AS j;
-
-INSERT INTO transactie
-SELECT * FROM JSON_TABLE(@json, '$.transactie[*]' COLUMNS (
-    trans_id INT  PATH '$.trans_id',
-    datum    DATE PATH '$.datum',
-    klant_id INT  PATH '$.klant_id',
-    medew_id INT  PATH '$.medew_id',
-    loc_id   INT  PATH '$.loc_id'
-)) AS j;
-
-INSERT INTO trans_prod
-SELECT * FROM JSON_TABLE(@json, '$.trans_prod[*]' COLUMNS (
-    trans_id INT PATH '$.trans_id',
-    prod_id  INT PATH '$.prod_id',
-    aantal   INT PATH '$.aantal'
-)) AS j;
-
-SELECT (SELECT COUNT(*) FROM klanten)    AS klanten,
-       (SELECT COUNT(*) FROM transactie) AS transacties,
-       (SELECT COUNT(*) FROM trans_prod) AS bonregels;</code></pre></div>
-  <p>Let op de volgorde: eerst de tabellen zonder foreign keys (klanten, producten, medewerkers, locatie), dan transactie, en als laatste trans_prod. Een kind kan pas verwijzen naar een ouder die al bestaat.</p>
+);</code></pre></div>
+  <p>Daarna volgen de <code>INSERT</code>-opdrachten, in deze volgorde: eerst de tabellen zonder foreign keys (klanten, producten, medewerkers, locatie), dan transactie, en als laatste trans_prod. Een kind kan pas verwijzen naar een ouder die al bestaat.</p>
   </div></details>
 
   <h3>Tabellen combineren met JOIN</h3>
@@ -1481,7 +1431,7 @@ db.close()</code></pre></div></li>
 <script>
 (function(){
   // ---------- SQL-kleuring ----------
-  var KW = "SELECT|FROM|WHERE|AND|OR|NOT|ORDER|BY|GROUP|HAVING|LIMIT|DESC|ASC|INSERT|INTO|VALUES|UPDATE|SET|DELETE|CREATE|DATABASE|TABLE|USE|DROP|ALTER|ADD|COLUMN|PRIMARY|KEY|FOREIGN|REFERENCES|AUTO_INCREMENT|NULL|IS|UNIQUE|DEFAULT|INT|VARCHAR|DECIMAL|DATE|DATETIME|TEXT|BOOLEAN|JOIN|LEFT|ON|AS|IN|LIKE|BETWEEN|DISTINCT|CASE|WHEN|THEN|ELSE|END|COUNT|SUM|AVG|MAX|MIN|ROUND|JSON_TABLE|COLUMNS|PATH|LOAD_FILE|CONVERT|USING|SHOW|DATABASES|DESCRIBE|VERSION|NOW|MONTH|DAYNAME|TIMESTAMPDIFF|YEAR|USING|exit";
+  var KW = "SELECT|FROM|WHERE|AND|OR|NOT|ORDER|BY|GROUP|HAVING|LIMIT|DESC|ASC|INSERT|INTO|VALUES|UPDATE|SET|DELETE|CREATE|DATABASE|TABLE|USE|DROP|IF|EXISTS|NAMES|SOURCE|ALTER|ADD|COLUMN|PRIMARY|KEY|FOREIGN|REFERENCES|AUTO_INCREMENT|NULL|IS|UNIQUE|DEFAULT|INT|VARCHAR|DECIMAL|DATE|DATETIME|TEXT|BOOLEAN|JOIN|LEFT|ON|AS|IN|LIKE|BETWEEN|DISTINCT|CASE|WHEN|THEN|ELSE|END|COUNT|SUM|AVG|MAX|MIN|ROUND|JSON_TABLE|COLUMNS|PATH|LOAD_FILE|CONVERT|USING|SHOW|DATABASES|DESCRIBE|VERSION|NOW|MONTH|DAYNAME|TIMESTAMPDIFF|YEAR|USING|exit";
   var re = new RegExp("(--[^\\n]*)|('(?:[^'\\\\]|\\\\.)*')|\\b(" + KW + ")\\b|\\b(\\d+(?:\\.\\d+)?)\\b", "g");
   function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
   document.querySelectorAll("code.sql").forEach(function(el){
@@ -1558,27 +1508,5 @@ db.close()</code></pre></div></li>
     document.querySelectorAll("section.ch").forEach(function(s){ io.observe(s); });
   }
 
-  // ---------- downloads ----------
-  var dlButtons = document.querySelectorAll("[data-file]");
-  function msg(file, text){ var el = document.querySelector('[data-msg-for="' + file + '"]'); if (el) el.textContent = text; }
-  var dlPromise = (window.claude && window.claude.use) ? window.claude.use("downloads") : Promise.resolve(null);
-  dlButtons.forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var file = btn.dataset.file;
-      dlPromise.then(function(dl){
-        if (!dl){ msg(file, "Downloaden werkt niet in deze weergave. Haal " + file + " van Canvas."); return; }
-        msg(file, "Bestand ophalen…");
-        fetch(file).then(function(r){ if (!r.ok) throw new Error(); return r.blob(); })
-          .then(function(blob){ return dl.save({ filename: file, data: blob }); })
-          .then(function(){ msg(file, "Opgeslagen. Kijk in je map Downloads."); })
-          .catch(function(err){
-            var c = err && err.code;
-            if (c === "declined") msg(file, "Niet opgeslagen.");
-            else if (c === "rate_limited") msg(file, "Er staat al een downloadvraag open.");
-            else msg(file, "Downloaden lukt hier niet. Haal " + file + " van Canvas.");
-          });
-      });
-    });
-  });
 })();
 </script>
