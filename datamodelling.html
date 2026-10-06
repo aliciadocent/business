@@ -1,0 +1,1322 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>SQL Werkplaats</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: werkboek — vaste hoofdstukkenlijst links, één leeskolom rechts; resultaatgrids als terugkerend motief */
+:root{
+  --bg:#f3f5f8; --surface:#ffffff; --ink:#152033; --muted:#55627a; --line:#d9dfe8;
+  --accent:#1f56c9; --accent-soft:#e6eefc; --warn:#9a5200; --warn-soft:#fdf1e2;
+  --good:#1d7a4a; --good-soft:#e5f4ec;
+  --code-bg:#121b29; --code-ink:#dfe7f3; --code-kw:#8fb4ff; --code-str:#f2c27b; --code-num:#9be0b4; --code-com:#7d8aa0;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e131b; --surface:#151c27; --ink:#e4e9f1; --muted:#9aa6b8; --line:#273244;
+  --accent:#7ea3ff; --accent-soft:#1b2843; --warn:#f0b25e; --warn-soft:#2e2414;
+  --good:#6fd39c; --good-soft:#15291f;
+  --code-bg:#0a0f16; --code-ink:#dfe7f3; --code-kw:#8fb4ff; --code-str:#f2c27b; --code-num:#9be0b4; --code-com:#7d8aa0;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e131b; --surface:#151c27; --ink:#e4e9f1; --muted:#9aa6b8; --line:#273244;
+  --accent:#7ea3ff; --accent-soft:#1b2843; --warn:#f0b25e; --warn-soft:#2e2414;
+  --good:#6fd39c; --good-soft:#15291f;
+  --code-bg:#0a0f16; --code-ink:#dfe7f3; --code-kw:#8fb4ff; --code-str:#f2c27b; --code-num:#9be0b4; --code-com:#7d8aa0;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:24px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.6;padding-inline:16px;padding-block:0 64px}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+
+.shell{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:250px minmax(0,1fr);gap:56px}
+@media (max-width:900px){.shell{grid-template-columns:minmax(0,1fr);gap:0}}
+
+/* zijbalk */
+.toc{position:sticky;top:env(safe-area-inset-top,0px);align-self:start;padding-block:32px;max-height:100vh;overflow-y:auto}
+.toc .brand{font-family:var(--f-display);font-weight:800;font-size:20px;letter-spacing:-.01em;margin:0 0 4px}
+.toc .sub{color:var(--muted);font-size:14px;margin:0 0 20px}
+.progress{font-size:13px;color:var(--muted);margin-bottom:8px;font-variant-numeric:tabular-nums}
+.bar{height:4px;background:var(--line);border-radius:2px;overflow:hidden;margin-bottom:20px}
+.bar span{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.toc a{display:grid;grid-template-columns:28px 1fr 16px;align-items:baseline;gap:6px;padding:6px 8px;border-radius:var(--r);text-decoration:none;color:var(--ink);font-size:15px;line-height:1.35}
+.toc a:hover{background:var(--surface)}
+.toc a.active{background:var(--accent-soft);color:var(--accent)}
+.toc .n{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.toc .done{color:var(--good);font-size:13px}
+.toc-mobile{display:none}
+@media (max-width:900px){
+  .toc{display:none}
+  .toc-mobile{display:block;margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+  .toc-mobile summary{padding:12px 16px;cursor:pointer;font-weight:700}
+  .toc-mobile ol{margin:0;padding:0 16px 12px 40px}
+  .toc-mobile li{padding:3px 0}
+}
+
+main{min-width:0;padding-block:32px}
+.col{max-width:740px}
+
+/* hero */
+.hero{padding-block:24px 40px;border-bottom:1px solid var(--line);margin-bottom:24px}
+.eyebrow{font-family:var(--f-mono);font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin:0 0 10px}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(38px,6vw,60px);line-height:1.02;letter-spacing:-.025em;margin:0 0 16px;text-wrap:balance}
+.lead{font-size:19px;color:var(--muted);max-width:60ch;margin:0 0 28px}
+.term{background:var(--code-bg);color:var(--code-ink);border-radius:var(--r);padding:18px 20px;font-family:var(--f-mono);font-size:13.5px;line-height:1.55;overflow-x:auto;max-width:620px}
+.term .p{color:var(--code-kw)}
+.term pre{margin:0;font:inherit}
+.term .meta{color:var(--code-com)}
+
+/* hoofdstukken */
+section.ch{padding-block:48px 24px;border-bottom:1px solid var(--line)}
+.ch-head{display:flex;align-items:baseline;gap:14px;margin-bottom:6px}
+.ch-num{font-family:var(--f-mono);font-size:13px;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:4px;font-variant-numeric:tabular-nums}
+h2{font-family:var(--f-display);font-weight:700;font-size:clamp(28px,4vw,36px);line-height:1.1;letter-spacing:-.02em;margin:0 0 12px;text-wrap:balance}
+h3{font-family:var(--f-display);font-weight:700;font-size:21px;line-height:1.25;margin:36px 0 8px;text-wrap:balance}
+h4{font-size:17px;margin:24px 0 6px}
+p,ul,ol{margin:0 0 14px}
+li{margin-bottom:4px}
+.intro{font-size:18.5px;color:var(--muted)}
+code{font-family:var(--f-mono);font-size:.86em;background:var(--accent-soft);color:var(--ink);padding:1px 5px;border-radius:4px}
+kbd{font-family:var(--f-mono);font-size:.82em;border:1px solid var(--line);border-bottom-width:2px;padding:1px 5px;border-radius:4px;background:var(--surface)}
+
+/* codeblokken */
+.code{position:relative;margin:12px 0 20px;background:var(--code-bg);border-radius:var(--r)}
+.code pre{margin:0;padding:16px 18px;overflow-x:auto;color:var(--code-ink);font-family:var(--f-mono);font-size:14px;line-height:1.6;tab-size:4}
+.code pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.code .lang{position:absolute;top:8px;right:84px;font-family:var(--f-mono);font-size:11px;color:var(--code-com);text-transform:uppercase;letter-spacing:.06em}
+.copy{position:absolute;top:6px;right:6px;font:600 12px var(--f-body);background:transparent;color:var(--code-ink);border:1px solid #ffffff33;border-radius:4px;padding:4px 10px;cursor:pointer}
+.copy:hover{background:#ffffff14}
+.code pre{padding-top:34px}
+.k{color:var(--code-kw);font-weight:600}.s{color:var(--code-str)}.nu{color:var(--code-num)}.c{color:var(--code-com);font-style:italic}
+
+/* callouts */
+.note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:12px 16px;border-radius:0 var(--r) var(--r) 0;margin:16px 0}
+.warn{border-left:3px solid var(--warn);background:var(--warn-soft);padding:12px 16px;border-radius:0 var(--r) var(--r) 0;margin:16px 0}
+.note p:last-child,.warn p:last-child{margin:0}
+.note strong:first-child,.warn strong:first-child{display:block;margin-bottom:2px}
+
+/* tabellen */
+.tbl{overflow-x:auto;margin:12px 0 20px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:13px;font-weight:700;color:var(--muted);background:var(--bg)}
+tr:last-child td{border-bottom:0}
+td code{white-space:nowrap}
+.num{font-variant-numeric:tabular-nums}
+
+/* stappen */
+.steps{counter-reset:s;list-style:none;padding:0;margin:16px 0}
+.steps>li{counter-increment:s;position:relative;padding-left:44px;margin-bottom:18px}
+.steps>li::before{content:counter(s);position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50%;background:var(--surface);border:1.5px solid var(--accent);color:var(--accent);font:700 14px/25px var(--f-mono);text-align:center}
+.steps>li>strong:first-child{display:block}
+
+/* oefenen */
+.practice{margin-top:32px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px 22px}
+.practice h3{margin-top:0;display:flex;align-items:center;gap:10px}
+.practice h3::before{content:"mysql>";font-family:var(--f-mono);font-size:13px;font-weight:600;color:var(--accent)}
+.ex{list-style:none;padding:0;margin:0;counter-reset:e}
+.ex>li{counter-increment:e;padding:14px 0;border-top:1px solid var(--line)}
+.ex>li:first-child{border-top:0;padding-top:4px}
+.ex>li>p:first-child::before{content:counter(e) ". ";font-family:var(--f-mono);font-weight:600;color:var(--accent)}
+details.ans>summary{cursor:pointer;font-size:14.5px;font-weight:700;color:var(--accent);list-style:none;display:inline-flex;align-items:center;gap:6px}
+details.ans>summary::-webkit-details-marker{display:none}
+details.ans>summary::before{content:"▸";transition:transform .15s}
+details.ans[open]>summary::before{transform:rotate(90deg)}
+details.ans>div{margin-top:8px}
+.result{font-family:var(--f-mono);font-size:13px;color:var(--good);background:var(--good-soft);padding:8px 12px;border-radius:var(--r);margin:8px 0;overflow-x:auto;white-space:pre}
+.donebox{display:flex;align-items:center;gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid var(--line);font-weight:700}
+.donebox input{width:20px;height:20px;accent-color:var(--good)}
+
+/* downloads */
+.dl{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:14px 0 18px}
+.btn{font:700 15px var(--f-body);background:var(--accent);color:var(--surface);border:0;border-radius:var(--r);padding:10px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.btn:hover{filter:brightness(1.08)}
+.btn .size{font-weight:400;opacity:.85;font-size:13px}
+.dl-msg{font-size:14px;color:var(--muted)}
+
+/* vergelijkingskaarten */
+.cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:16px 0 20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.card h4{margin:0 0 2px;font-family:var(--f-display);font-size:19px}
+.card .tag{font-size:13px;color:var(--muted);margin:0 0 10px}
+.card ul{padding-left:18px;font-size:15px;margin:0}
+.card.pick{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.badge{display:inline-block;font:700 11px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--accent);background:var(--accent-soft);padding:2px 6px;border-radius:4px;margin-bottom:8px}
+
+/* diagrammen */
+.fig{margin:16px 0 22px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px;overflow-x:auto}
+.fig svg{display:block;width:100%;height:auto;min-width:520px}
+.fig figcaption{font-size:14px;color:var(--muted);padding:8px 4px 0}
+svg .box{fill:var(--surface);stroke:var(--muted);stroke-width:1.2}
+svg .box-acc{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2}
+svg .t{fill:var(--ink);font:700 14px var(--f-mono)}
+svg .a{fill:var(--muted);font:12px var(--f-mono)}
+svg .ak{fill:var(--ink);font:600 12px var(--f-mono)}
+svg .ln{stroke:var(--muted);stroke-width:1.3;fill:none}
+svg .rule{stroke:var(--line);stroke-width:1}
+svg .card-l{fill:var(--accent);font:700 13px var(--f-mono)}
+svg .cap{fill:var(--ink);font:700 15px var(--f-display)}
+svg .capm{fill:var(--muted);font:13px var(--f-body)}
+footer{color:var(--muted);font-size:14px;padding-top:32px}
+</style>
+
+<div class="shell">
+<nav class="toc" aria-label="Hoofdstukken">
+  <p class="brand">SQL Werkplaats</p>
+  <p class="sub">Semester 1 · databases</p>
+  <div class="progress" id="progressText">0 van 11 hoofdstukken klaar</div>
+  <div class="bar"><span id="progressBar"></span></div>
+  <ol id="tocList">
+    <li><a href="#h1"><span class="n">01</span><span>Wat is een database?</span><span class="done"></span></a></li>
+    <li><a href="#h2"><span class="n">02</span><span>MySQL met Docker</span><span class="done"></span></a></li>
+    <li><a href="#h3"><span class="n">03</span><span>Een SQL-programma</span><span class="done"></span></a></li>
+    <li><a href="#h4"><span class="n">04</span><span>SQL als taal</span><span class="done"></span></a></li>
+    <li><a href="#h5"><span class="n">05</span><span>Je eerste database</span><span class="done"></span></a></li>
+    <li><a href="#h6"><span class="n">06</span><span>SELECT</span><span class="done"></span></a></li>
+    <li><a href="#h7"><span class="n">07</span><span>CREATE en INSERT</span><span class="done"></span></a></li>
+    <li><a href="#h8"><span class="n">08</span><span>DELETE</span><span class="done"></span></a></li>
+    <li><a href="#h9"><span class="n">09</span><span>UPDATE</span><span class="done"></span></a></li>
+    <li><a href="#h10"><span class="n">10</span><span>Supermarkt en relaties</span><span class="done"></span></a></li>
+    <li><a href="#h11"><span class="n">11</span><span>Op zoek naar patronen</span><span class="done"></span></a></li>
+  </ol>
+</nav>
+
+<main>
+<details class="toc-mobile">
+  <summary>Hoofdstukken</summary>
+  <ol>
+    <li><a href="#h1">Wat is een database?</a></li>
+    <li><a href="#h2">MySQL met Docker</a></li>
+    <li><a href="#h3">Een SQL-programma</a></li>
+    <li><a href="#h4">SQL als taal</a></li>
+    <li><a href="#h5">Je eerste database</a></li>
+    <li><a href="#h6">SELECT</a></li>
+    <li><a href="#h7">CREATE en INSERT</a></li>
+    <li><a href="#h8">DELETE</a></li>
+    <li><a href="#h9">UPDATE</a></li>
+    <li><a href="#h10">Supermarkt en relaties</a></li>
+    <li><a href="#h11">Op zoek naar patronen</a></li>
+  </ol>
+</details>
+
+<div class="col">
+<header class="hero">
+  <p class="eyebrow">Semester 1 · eerste kennismaking met databases</p>
+  <h1>SQL Werkplaats</h1>
+  <p class="lead">Je zet een MySQL-database op je eigen laptop, vult hem met een game-leaderboard en de kassabonnen van een supermarkt, en leert die data bevragen. Werk de hoofdstukken op volgorde door en vink ze af als je klaar bent.</p>
+  <div class="term" aria-label="Voorbeeld van een SQL-query met resultaat">
+<pre><span class="p">mysql&gt;</span> SELECT gebruikersnaam, score FROM highscore
+    -&gt; JOIN gebruiker USING (gebruiker_id)
+    -&gt; ORDER BY score DESC LIMIT 3;
++----------------+-------+
+| gebruikersnaam | score |
++----------------+-------+
+| TurboTim       | 26900 |
+| TurboTim       | 25480 |
+| TurboTim       | 24100 |
++----------------+-------+
+<span class="meta">3 rows in set (0.00 sec)</span></pre>
+  </div>
+  <p class="dl-msg" style="margin-top:12px">Aan het eind van hoofdstuk 6 kun je deze query zelf lezen. In hoofdstuk 10 schrijf je hem.</p>
+</header>
+
+<!-- ============ 1 ============ -->
+<section class="ch" id="h1">
+  <div class="ch-head"><span class="ch-num">01</span></div>
+  <h2>Wat is een database?</h2>
+  <p class="intro">Een database is een georganiseerde verzameling gegevens, zo opgeslagen dat je ze snel en betrouwbaar terugvindt, aanpast en combineert.</p>
+  <p>Je gebruikt elke dag databases zonder dat je het merkt. Spotify bewaart je playlists, de AH-app je bonuskaart en aankopen, Instagram wie wie volgt, en een game bewaart wie de hoogste score heeft. Achter al die apps draait een <strong>DBMS</strong> (database management system): software die de gegevens opslaat, bewaakt en doorzoekt. In deze werkplaats gebruik je <strong>MySQL</strong>, een van de meest gebruikte DBMS'en ter wereld.</p>
+
+  <h3>Waarom niet gewoon Excel?</h3>
+  <p>Een spreadsheet lijkt op een database: rijen en kolommen. Toch loop je met Excel snel vast zodra meer mensen of meer data meedoen.</p>
+  <div class="tbl"><table>
+    <thead><tr><th></th><th>Spreadsheet (Excel)</th><th>Database (MySQL)</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Gebruikers</strong></td><td>Eén persoon tegelijk aan het bestand</td><td>Duizenden gebruikers en apps tegelijk</td></tr>
+      <tr><td><strong>Regels</strong></td><td>Je kunt overal alles typen</td><td>Een score is een getal, een gebruikersnaam is uniek</td></tr>
+      <tr><td><strong>Verbanden</strong></td><td>Handmatig kopiëren tussen tabbladen</td><td>Vastgelegd met sleutels, de database bewaakt ze</td></tr>
+      <tr><td><strong>Omvang</strong></td><td>Wordt traag bij honderdduizenden rijen</td><td>Miljoenen rijen zonder problemen</td></tr>
+      <tr><td><strong>Gebruik door apps</strong></td><td>Lastig</td><td>Elke programmeertaal kan ermee praten</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>SQL en NoSQL</h3>
+  <p>Er zijn twee grote families databases. <strong>SQL-databases</strong> (ook wel relationele databases) slaan gegevens op in tabellen met vaste kolommen. Je praat ermee in de taal SQL. Je spreekt het uit als "sequel" of als losse letters S-Q-L. <strong>NoSQL-databases</strong> ("not only SQL") werken zonder vaste tabellen. Vaak slaan ze <em>documenten</em> op in JSON-vorm.</p>
+  <div class="tbl"><table>
+    <thead><tr><th></th><th>SQL (relationeel)</th><th>NoSQL</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Opslag</strong></td><td>Tabellen met rijen en kolommen</td><td>Documenten (JSON), sleutel-waarde, grafen</td></tr>
+      <tr><td><strong>Structuur</strong></td><td>Vooraf vastgelegd (schema)</td><td>Flexibel, elk document mag anders zijn</td></tr>
+      <tr><td><strong>Verbanden</strong></td><td>Sterk: tabellen koppelen met sleutels</td><td>Zwakker: gegevens staan vaak dubbel</td></tr>
+      <tr><td><strong>Sterk in</strong></td><td>Betrouwbare, samenhangende data: bestellingen, betalingen, voorraad</td><td>Enorme hoeveelheden losse data die snel verandert: berichten, logs, sensordata</td></tr>
+      <tr><td><strong>Voorbeelden</strong></td><td>MySQL, MariaDB, PostgreSQL, SQL Server</td><td>MongoDB, Redis, Neo4j, Cassandra</td></tr>
+    </tbody>
+  </table></div>
+  <p>Hetzelfde gegeven ziet er in beide werelden anders uit. Zo slaat een NoSQL-database een speler met zijn scores op: alles in één document.</p>
+<div class="code"><pre><code class="json">{
+  "gebruikersnaam": "PixelPia",
+  "land": "Nederland",
+  "scores": [ { "score": 12450, "level": 7 }, { "score": 15890, "level": 9 } ]
+}</code></pre></div>
+  <p>Een SQL-database splitst dit in twee tabellen: één met gebruikers en één met scores, gekoppeld via een <code>gebruiker_id</code>. In hoofdstuk 5 importeer je precies zo'n JSON-bestand in twee SQL-tabellen.</p>
+
+  <div class="practice">
+    <h3>Oefenen</h3>
+    <ol class="ex">
+      <li><p>Noem drie apps die jij gebruikt en bedenk welke gegevens ze in een database bewaren.</p>
+        <details class="ans"><summary>Voorbeeldantwoord</summary><div><p>Strava: gebruikers, ritten, afstanden, routes. Netflix: accounts, profielen, wat je hebt gekeken en tot welke minuut. Een webshop: klanten, producten, bestellingen, betalingen.</p></div></details></li>
+      <li><p>Een webshop bewaart bestellingen en betalingen. Kies je SQL of NoSQL? Waarom?</p>
+        <details class="ans"><summary>Antwoord</summary><div><p>SQL. Een bestelling hoort bij precies één klant en bevat bestaande producten. Die verbanden moeten kloppen, en geld mag nooit "ongeveer goed" zijn. Een relationele database bewaakt dat.</p></div></details></li>
+      <li><p>Waarom zou een chat-app als WhatsApp voor de berichten zelf eerder NoSQL kiezen?</p>
+        <details class="ans"><summary>Antwoord</summary><div><p>Er komen elke seconde miljoenen berichten bij, met wisselende inhoud (tekst, foto, spraak). Een flexibele structuur die makkelijk over veel servers te verdelen is, past daar beter bij.</p></div></details></li>
+    </ol>
+    <label class="donebox"><input type="checkbox" id="done-h1" data-ch="h1"> Hoofdstuk 1 klaar</label>
+  </div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section class="ch" id="h2">
+  <div class="ch-head"><span class="ch-num">02</span></div>
+  <h2>MySQL installeren met Docker</h2>
+  <p class="intro">Je installeert MySQL niet rechtstreeks op je laptop, maar draait het in een Docker-container. Zo heeft iedereen in de klas precies dezelfde versie en instellingen.</p>
+
+  <h3>Image en container</h3>
+  <ul>
+    <li>Een <strong>image</strong> is het recept: een bevroren pakket met MySQL en alles wat het nodig heeft.</li>
+    <li>Een <strong>container</strong> is de taart die je uit dat recept bakt: een draaiende, afgesloten kopie van het image. Gooi je de container weg, dan blijft het recept bestaan.</li>
+  </ul>
+  <p>De container draait op jouw laptop. Er gaat niets naar internet: je database staat lokaal.</p>
+
+  <ol class="steps">
+    <li><strong>Installeer Docker Desktop</strong>
+      Download via <a href="https://www.docker.com/products/docker-desktop/" target="_blank" rel="noopener">docker.com/products/docker-desktop</a>.
+      <ul>
+        <li><em>Windows:</em> laat "Use WSL 2" aangevinkt. Vraagt het installatieprogramma om WSL bij te werken? Open PowerShell als administrator, typ <code>wsl --install</code> of <code>wsl --update</code> en herstart je laptop.</li>
+        <li><em>Mac:</em> kies de versie voor jouw chip: Apple Silicon (M1 t/m M4) of Intel. Je vindt dit onder Apple-menu → Over deze Mac.</li>
+      </ul></li>
+    <li><strong>Start Docker Desktop</strong>
+      Wacht tot linksonder "Engine running" staat. Een Docker-account heb je niet nodig.</li>
+    <li><strong>Test Docker</strong>
+      Open een terminal: PowerShell op Windows, Terminal op Mac. Zie je "Hello from Docker!"? Dan werkt het.
+<div class="code"><pre><code class="sh">docker run hello-world</code></pre></div></li>
+    <li><strong>Download het MySQL-image</strong>
+      <code>lts</code> staat voor long-term support: de stabiele versie.
+<div class="code"><pre><code class="sh">docker pull mysql:lts</code></pre></div></li>
+    <li><strong>Start je MySQL-container</strong>
+<div class="code"><pre><code class="sh">docker run --name mysql-db -e MYSQL_ROOT_PASSWORD=welkom -p 3306:3306 -d mysql:lts</code></pre></div>
+      <div class="tbl"><table>
+        <thead><tr><th>Onderdeel</th><th>Betekenis</th></tr></thead>
+        <tbody>
+          <tr><td><code>--name mysql-db</code></td><td>De naam van je container. Die gebruik je in alle volgende commando's.</td></tr>
+          <tr><td><code>-e MYSQL_ROOT_PASSWORD=welkom</code></td><td>Het wachtwoord van de beheerder (root). Prima voor oefenen op je eigen laptop, nooit voor een echte server.</td></tr>
+          <tr><td><code>-p 3306:3306</code></td><td>Verbindt poort 3306 van je laptop met de container, zodat je SQL-programma (hoofdstuk 3) erbij kan.</td></tr>
+          <tr><td><code>-d</code></td><td>Draai op de achtergrond.</td></tr>
+          <tr><td><code>mysql:lts</code></td><td>Het image waaruit de container gemaakt wordt.</td></tr>
+        </tbody>
+      </table></div></li>
+    <li><strong>Controleer of hij draait</strong>
+      Je ziet <code>mysql-db</code> in de lijst. In Docker Desktop staat hij ook onder <em>Containers</em>. Geef MySQL na de eerste start ongeveer 20 seconden om op te starten.
+<div class="code"><pre><code class="sh">docker ps</code></pre></div></li>
+    <li><strong>Praat met MySQL via de terminal</strong>
+      Typ het wachtwoord <code>welkom</code>. Je ziet tijdens het typen niets; dat hoort zo. De prompt wordt <code>mysql&gt;</code>.
+<div class="code"><pre><code class="sh">docker exec -it mysql-db mysql -u root -p</code></pre></div>
+<div class="code"><pre><code class="sql">SELECT VERSION();
+exit</code></pre></div></li>
+  </ol>
+
+  <h3>Stoppen en weer starten</h3>
+  <p>Je hoeft de container maar één keer aan te maken. Daarna start en stop je hem, ook via de knoppen in Docker Desktop. Je data blijft bewaard zolang je de container niet verwijdert.</p>
+<div class="code"><pre><code class="sh">docker stop mysql-db
+docker start mysql-db</code></pre></div>
+  <div class="warn"><strong>Let op</strong><p><code>docker rm mysql-db</code> verwijdert de container én alle databases erin.</p></div>
+
+  <h3>Als het niet lukt</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Melding</th><th>Oplossing</th></tr></thead>
+    <tbody>
+      <tr><td><code>WSL 2 installation is incomplete</code> of <code>Virtualization support not detected</code></td><td>PowerShell als administrator: <code>wsl --install</code>, herstarten. Helpt dat niet, zet dan virtualisatie (Intel VT-x of AMD-V) aan in je BIOS.</td></tr>
+      <tr><td><code>docker</code> wordt niet herkend</td><td>Sluit je terminal en open hem opnieuw.</td></tr>
+      <tr><td><code>Cannot connect to the Docker daemon</code></td><td>Docker Desktop draait niet. Start het en wacht op "Engine running".</td></tr>
+      <tr><td><code>port is already allocated</code></td><td>Er draait al een database (bijvoorbeeld XAMPP) op poort 3306. Doe <code>docker rm -f mysql-db</code> en start opnieuw met <code>-p 3307:3306</code>. Gebruik in hoofdstuk 3 dan poort 3307.</td></tr>
+      <tr><td><code>container name "/mysql-db" is already in use</code></td><td>Je hebt hem al aangemaakt. Gebruik <code>docker start mysql-db</code>.</td></tr>
+      <tr><td><code>Access denied for user 'root'</code></td><td>Verkeerd wachtwoord. Typ <code>welkom</code> opnieuw.</td></tr>
+      <tr><td><code>the input device is not a TTY</code></td><td>Je gebruikt Git Bash op Windows. Gebruik PowerShell.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="practice">
+    <h3>Oefenen</h3>
+    <ol class="ex">
+      <li><p>Wat is het verschil tussen een image en een container?</p>
+        <details class="ans"><summary>Antwoord</summary><div><p>Het image is het vaste pakket (het recept). Een container is een draaiende kopie daarvan (de taart). Uit één image kun je meerdere containers maken.</p></div></details></li>
+      <li><p>Je klasgenoot krijgt <code>port is already allocated</code>. Wat is er aan de hand?</p>
+        <details class="ans"><summary>Antwoord</summary><div><p>Op zijn laptop gebruikt al een ander programma poort 3306, meestal een eerder geïnstalleerde MySQL of XAMPP. Kies een andere poort aan de laptopkant: <code>-p 3307:3306</code>.</p></div></details></li>
+      <li><p>Wat print <code>SELECT VERSION();</code> bij jou?</p>
+        <details class="ans"><summary>Antwoord</summary><div><p>Het versienummer van MySQL in je container, bijvoorbeeld <code>9.7.x</code>. Zie je een getal, dan werkt alles.</p></div></details></li>
+    </ol>
+    <label class="donebox"><input type="checkbox" id="done-h2" data-ch="h2"> Hoofdstuk 2 klaar</label>
+  </div>
+</section>
+
+<!-- ============ 3 ============ -->
+<section class="ch" id="h3">
+  <div class="ch-head"><span class="ch-num">03</span></div>
+  <h2>Een SQL-programma installeren</h2>
+  <p class="intro">De terminal werkt, maar een SQL-programma (een databaseclient) laat je tabellen zien, vult je typwerk aan en tekent je database als diagram.</p>
+  <p>Het programma draait op je laptop en maakt verbinding met de MySQL-container via poort 3306. Er zijn veel van zulke programma's. Deze drie zijn gratis en veel gebruikt.</p>
+
+  <div class="cmp">
+    <div class="card pick">
+      <span class="badge">Advies</span>
+      <h4>DBeaver Community</h4>
+      <p class="tag">Open source · Windows, Mac, Linux</p>
+      <ul>
+        <li>Werkt met bijna elke database: MySQL, PostgreSQL, SQL Server, SQLite</li>
+        <li>Toont je tabellen als ERD-diagram</li>
+        <li>Veel knoppen en opties; even wennen</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>MySQL Workbench</h4>
+      <p class="tag">Van Oracle, de maker van MySQL</p>
+      <ul>
+        <li>Alleen voor MySQL</li>
+        <li>Sterk in datamodellering: ERD tekenen en er tabellen van laten maken</li>
+        <li>Kan zwaar en soms instabiel zijn, vooral op de Mac</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Beekeeper Studio</h4>
+      <p class="tag">Community Edition · open source</p>
+      <ul>
+        <li>Rustig, modern en het snelst te leren</li>
+        <li>Werkt met MySQL, PostgreSQL, SQLite en meer</li>
+        <li>Importeren uit bestanden zit in de betaalde versie. Voor deze werkplaats heb je dat niet nodig.</li>
+      </ul>
+    </div>
+  </div>
+  <p>Download: <a href="https://dbeaver.io/download/" target="_blank" rel="noopener">DBeaver Community</a> · <a href="https://dev.mysql.com/downloads/workbench/" target="_blank" rel="noopener">MySQL Workbench</a> · <a href="https://www.beekeeperstudio.io/get-community" target="_blank" rel="noopener">Beekeeper Studio Community</a></p>
+
+  <h3>Verbinding maken</h3>
+  <p>Maak in je programma een nieuwe MySQL-verbinding met deze gegevens. Je container moet draaien.</p>
+  <div class="tbl"><table>
+    <tbody>
+      <tr><td><strong>Host</strong></td><td><code>localhost</code></td></tr>
+      <tr><td><strong>Poort</strong></td><td><code>3306</code> (of <code>3307</code> als je dat in hoofdstuk 2 hebt gekozen)</td></tr>
+      <tr><td><strong>Gebruiker</strong></td><td><code>root</code></td></tr>
+      <tr><td><strong>Wachtwoord</strong></td><td><code>welkom</code></td></tr>
+    </tbody>
+  </table></div>
+  <div class="tbl"><table>
+    <thead><tr><th>Programma</th><th>Bijzonderheid</th><th>SQL uitvoeren</th></tr></thead>
+    <tbody>
+      <tr><td><strong>DBeaver</strong></td><td>Foutmelding <code>Public Key Retrieval is not allowed</code>? Ga naar <em>Edit Connection → Driver properties</em> en zet <code>allowPublicKeyRetrieval</code> op <code>TRUE</code>.</td><td>Eén statement: <kbd>Ctrl</kbd>+<kbd>Enter</kbd>. Heel script: <kbd>Alt</kbd>+<kbd>X</kbd>. Op de Mac <kbd>⌘</kbd> en <kbd>⌥</kbd>.</td></tr>
+      <tr><td><strong>Workbench</strong></td><td>Waarschuwing over een "incompatible/nonstandard server version"? Klik op <em>Continue Anyway</em>.</td><td>Bliksemknop (alles) of de bliksem met cursor (één statement).</td></tr>
+      <tr><td><strong>Beekeeper</strong></td><td>Kies <em>MySQL</em> als type en vul de gegevens in.</td><td>Knop <em>Run</em>, of selecteer tekst en voer alleen die uit.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><strong>Script of statement?</strong><p>In hoofdstuk 5 en 10 voer je een script uit met meerdere regels die op elkaar voortbouwen. Voer die uit als heel script, niet regel voor regel in losse tabbladen.</p></div>
+
+  <div class="practice">
+    <h3>Oefenen</h3>
+    <ol class="ex">
+      <li><p>Maak verbinding en voer uit: <code>SHOW DATABASES;</code> Welke databases zie je?</p>
+        <details class="ans"><summary>Antwoord</summary><div><p>De systeemdatabases van MySQL: <code>information_schema</code>, <code>mysql</code>, <code>performance_schema</code> en <code>sys</code>. Daar blijf je van af. Je eigen databases komen er straks bij.</p></div></details></li>
+      <li><p>Je collega wil alleen met MySQL werken en vooral ERD's ontwerpen. Welk programma raad je aan?</p>
+        <details class="ans"><summary>Antwoord</summary><div><p>MySQL Workbench: dat is gemaakt voor MySQL en sterk in visueel datamodelleren.</p></div></details></li>
+    </ol>
+    <label class="donebox"><input type="checkbox" id="done-h3" data-ch="h3"> Hoofdstuk 3 klaar</label>
+  </div>
+</section>
+
+<!-- ============ 4 ============ -->
+<section class="ch" id="h4">
+  <div class="ch-head"><span class="ch-num">04</span></div>
+  <h2>SQL als taal</h2>
+  <p class="intro">SQL (Structured Query Language) is de taal waarmee je met een relationele database praat. Je beschrijft <em>wat</em> je wilt hebben, de database bedenkt zelf <em>hoe</em> hij het vindt.</p>
+  <p>Vergelijk het met bestellen in een restaurant: je zegt "een pizza margherita", niet hoe de kok het deeg moet kneden. Zo'n taal heet <strong>declaratief</strong>. Daarom lees je SQL bijna als een Engelse zin.</p>
+<div class="code"><pre><code class="sql">SELECT gebruikersnaam FROM gebruiker WHERE land = 'België';</code></pre></div>
+  <p>"Geef de gebruikersnaam uit de tabel gebruiker, waar het land België is."</p>
+
+  <h3>Twee soorten opdrachten</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Soort</th><th>Doel</th><th>Opdrachten</th><th>Hoofdstuk</th></tr></thead>
+    <tbody>
+      <tr><td><strong>DDL</strong> · Data Definition</td><td>De structuur bouwen: databases en tabellen</td><td><code>CREATE</code>, <code>ALTER</code>, <code>DROP</code></td><td>5, 7</td></tr>
+      <tr><td><strong>DML</strong> · Data Manipulation</td><td>De gegevens zelf opvragen en wijzigen</td><td><code>SELECT</code>, <code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code></td><td>6 t/m 11</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Spelregels</h3>
+  <ul>
+    <li>Elke opdracht eindigt met een puntkomma <code>;</code>. Vergeet je die in de terminal, dan verandert de prompt in <code>-&gt;</code>: MySQL wacht op meer.</li>
+    <li>Sleutelwoorden schrijf je in hoofdletters (<code>SELECT</code>, <code>FROM</code>). Dat is niet verplicht, maar wel afgesproken: het leest makkelijker.</li>
+    <li>Tekst en datums staan tussen enkele aanhalingstekens: <code>'België'</code>, <code>'2026-10-09'</code>. Getallen niet: <code>20000</code>.</li>
+    <li>Namen van tabellen en kolommen hebben geen spaties. Gebruik een underscore: <code>gebruiker_id</code>.</li>
+    <li>Commentaar begint met <code>--</code> en wordt overgeslagen.</li>
+  </ul>
+
+  <h3>Vaste volgorde</h3>
+  <p>De onderdelen van een <code>SELECT</code> hebben een vaste volgorde. Je hoeft niet alles te gebruiken, maar wat je gebruikt, staat op deze plek.</p>
+<div class="code"><pre><code class="sql">SELECT   kolommen          -- wat wil je zien?
+FROM     tabel             -- waar staat het?
+WHERE    voorwaarde        -- welke rijen?
+GROUP BY kolom             -- groepen maken (hoofdstuk 11)
+ORDER BY kolom             -- sorteren
+LIMIT    aantal;           -- hoeveel rijen?</code></pre></div>
+
+  <div class="practice">
+    <h3>Oefenen</h3>
+    <p>Zoek de fout in elke opdracht.</p>
+    <ol class="ex">
+      <li><p><code>SELECT * FROM gebruiker WHERE land = België;</code></p>
+        <details class="ans"><summary>Antwoord</summary><div><p>Tekst moet tussen aanhalingstekens: <code>'België'</code>.</p></div></details></li>
+      <li><p><code>SELECT * FROM highscore ORDER BY score DESC WHERE score &gt; 1000;</code></p>
+        <details class="ans"><summary>Antwoord</summary><div><p>De volgorde klopt niet: <code>WHERE</code> komt vóór <code>ORDER BY</code>.</p></div></details></li>
+      <li><p><code>SELECT gebruikers naam FROM gebruiker;</code></p>
+        <details class="ans"><summary>Antwoord</summary><div><p>Een kolomnaam heeft geen spatie. Het moet <code>gebruikersnaam</code> zijn.</p></div></details></li>
+      <li><p>Is <code>CREATE TABLE</code> DDL of DML? En <code>UPDATE</code>?</p>
+        <details class="ans"><summary>Antwoord</summary><div><p><code>CREATE TABLE</code> is DDL: het bouwt structuur. <code>UPDATE</code> is DML: het wijzigt gegevens.</p></div></details></li>
+    </ol>
+    <label class="donebox"><input type="checkbox" id="done-h4" data-ch="h4"> Hoofdstuk 4 klaar</label>
+  </div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section class="ch" id="h5">
+  <div class="ch-head"><span class="ch-num">05</span></div>
+  <h2>Je eerste database: highscores</h2>
+  <p class="intro">Je bouwt de database achter het leaderboard van de game <em>Pixel Runner</em>: tien spelers en hun 27 gespeelde potjes. De gegevens krijg je als JSON-bestand, zoals ze uit een app of API zouden komen.</p>
+
+  <figure class="fig">
+    <svg viewBox="0 0 640 200" role="img" aria-label="ERD: één gebruiker heeft veel highscores">
+      <rect class="box" x="20" y="20" width="230" height="160" rx="6"/>
+      <text class="t" x="34" y="44">gebruiker</text>
+      <line class="rule" x1="32" y1="54" x2="238" y2="54"/>
+      <text class="ak" x="34" y="76">PK gebruiker_id   INT</text>
+      <text class="a" x="34" y="96">gebruikersnaam    VARCHAR</text>
+      <text class="a" x="34" y="116">email             VARCHAR</text>
+      <text class="a" x="34" y="136">land              VARCHAR</text>
+      <text class="a" x="34" y="156">aangemaakt_op     DATE</text>
+      <rect class="box-acc" x="390" y="20" width="230" height="140" rx="6"/>
+      <text class="t" x="404" y="44">highscore</text>
+      <line class="rule" x1="402" y1="54" x2="608" y2="54"/>
+      <text class="ak" x="404" y="76">PK highscore_id   INT</text>
+      <text class="ak" x="404" y="96">FK gebruiker_id   INT</text>
+      <text class="a" x="404" y="116">score             INT</text>
+      <text class="a" x="404" y="136">level             INT</text>
+      <text class="a" x="404" y="156">gespeeld_op  DATETIME</text>
+      <path class="ln" d="M250 92 H390"/>
+      <text class="card-l" x="260" y="84">1</text>
+      <text class="card-l" x="372" y="84">n</text>
+    </svg>
+    <figcaption>Eén gebruiker heeft veel highscores; elke highscore hoort bij precies één gebruiker. Dat heet een 1-op-veel-relatie.</figcaption>
+  </figure>
+
+  <h3>Stap 1 · Download het bestand</h3>
+  <div class="dl">
+    <button class="btn" type="button" data-file="highscore.json">Download highscore.json <span class="size">6 kB</span></button>
+    <span class="dl-msg" data-msg-for="highscore.json"></span>
+  </div>
+  <p>Het bestand bevat twee lijsten: <code>gebruikers</code> en <code>highscores</code>. Zo ziet het begin eruit:</p>
+<div class="code"><pre><code class="json">{
+  "gebruikers": [
+    { "gebruiker_id": 1, "gebruikersnaam": "PixelPia", "email": "pia@example.com",
+      "land": "Nederland", "aangemaakt_op": "2026-01-12" },
+    ...
+  ],
+  "highscores": [
+    { "highscore_id": 1, "gebruiker_id": 1, "score": 12450, "level": 7,
+      "gespeeld_op": "2026-09-01 19:12:00" },
+    ...
+  ]
+}</code></pre></div>
+
+  <h3>Stap 2 · Zet het bestand in de container</h3>
+  <p>MySQL draait in een afgesloten container en kan je Downloads-map niet zien. Daarom kopieer je het bestand naar de container, in de map waar MySQL bestanden mag lezen: <code>/var/lib/mysql-files/</code>. Open een terminal in je Downloads-map en kopieer:</p>
+<div class="code"><pre><code class="sh"># Windows (PowerShell)
+cd $HOME\Downloads
+# Mac
+cd ~/Downloads
+
+docker cp highscore.json mysql-db:/var/lib/mysql-files/highscore.json</code></pre></div>
+
+  <h3>Stap 3 · Maak de database en de tabellen</h3>
+  <p>Voer dit uit in je SQL-programma. Wat hier precies staat, leer je in hoofdstuk 7. Nu mag je het kopiëren.</p>
+<div class="code"><pre><code class="sql">CREATE DATABASE game;
+USE game;
+
+CREATE TABLE gebruiker (
+    gebruiker_id   INT          PRIMARY KEY,
+    gebruikersnaam VARCHAR(30)  NOT NULL UNIQUE,
+    email          VARCHAR(100) NOT NULL,
+    land           VARCHAR(50),
+    aangemaakt_op  DATE
+);
+
+CREATE TABLE highscore (
+    highscore_id INT      PRIMARY KEY AUTO_INCREMENT,
+    gebruiker_id INT      NOT NULL,
+    score        INT      NOT NULL,
+    level        INT,
+    gespeeld_op  DATETIME,
+    FOREIGN KEY (gebruiker_id) REFERENCES gebruiker(gebruiker_id)
+);</code></pre></div>
+
+  <h3>Stap 4 · Importeer de JSON</h3>
+  <p>Voer dit uit als één script. Het werkt in elk SQL-programma, ook in de terminal.</p>
+<div class="code"><pre><code class="sql">USE game;
+
+-- 1. Lees het bestand in als tekst en bewaar het in de variabele @json
+SET @json = CONVERT(LOAD_FILE('/var/lib/mysql-files/highscore.json') USING utf8mb4);
+SELECT @json IS NOT NULL AS bestand_gevonden;   -- moet 1 zijn
+
+-- 2. JSON_TABLE maakt van de lijst "gebruikers" een tabel; INSERT zet die rijen erin
+INSERT INTO gebruiker (gebruiker_id, gebruikersnaam, email, land, aangemaakt_op)
+SELECT * FROM JSON_TABLE(@json, '$.gebruikers[*]' COLUMNS (
+    gebruiker_id   INT          PATH '$.gebruiker_id',
+    gebruikersnaam VARCHAR(30)  PATH '$.gebruikersnaam',
+    email          VARCHAR(100) PATH '$.email',
+    land           VARCHAR(50)  PATH '$.land',
+    aangemaakt_op  DATE         PATH '$.aangemaakt_op'
+)) AS j;
+
+-- 3. Hetzelfde voor de lijst "highscores"
+INSERT INTO highscore (highscore_id, gebruiker_id, score, level, gespeeld_op)
+SELECT * FROM JSON_TABLE(@json, '$.highscores[*]' COLUMNS (
+    highscore_id INT      PATH '$.highscore_id',
+    gebruiker_id INT      PATH '$.gebruiker_id',
+    score        INT      PATH '$.score',
+    level        INT      PATH '$.level',
+    gespeeld_op  DATETIME PATH '$.gespeeld_op'
+)) AS j;
+
+-- 4. Controle
+SELECT COUNT(*) AS gebruikers FROM gebruiker;   -- 10
+SELECT COUNT(*) AS highscores FROM highscore;   -- 27</code></pre></div>
+  <p>Zo werkt het: <code>LOAD_FILE</code> leest het bestand, <code>'$.gebruikers[*]'</code> betekent "elk item in de lijst gebruikers", en elke regel onder <code>COLUMNS</code> zegt welk JSON-veld in welke kolom komt.</p>
+
+  <div class="warn"><strong>Krijg je <code>bestand_gevonden = 0</code>?</strong><p>MySQL kan het bestand niet vinden. Controleer de bestandsnaam: je browser heeft het misschien opgeslagen als <code>highscore (1).json</code>. Controleer ook welke map MySQL mag lezen met <code>SELECT @@secure_file_priv;</code> en kopieer het bestand naar precies die map.</p></div>
+  <div class="note"><strong>Gebruik je MySQL Workbench?</strong><p>Dan kun je ook importeren met de muis: rechtsklik op een tabel → <em>Table Data Import Wizard</em> → kies het JSON-bestand. Die wizard verwacht wel één lijst per bestand. De SQL-route hierboven werkt overal.</p></div>
+
+  <div class="practice">
+    <h3>Oefenen</h3>
+    <ol class="ex">
+      <li><p>Importeer de data. Klopt je controle: 10 gebruikers en 27 highscores?</p>
+        <details class="ans"><summary>Wat als het niet klopt?</summary><div><p>Zijn de aantallen dubbel (20 en 54)? Dan heb je het script twee keer uitgevoerd. Begin opnieuw met <code>DROP DATABASE game;</code> en doe stap 3 en 4 nog eens.</p></div></details></li>
+      <li><p>Waarom moest het bestand eerst met <code>docker cp</code> de container in?</p>
+        <details class="ans"><summary>Antwoord</summary><div><p>MySQL draait in de container en ziet alleen bestanden in die container. Je laptop en de container hebben elk hun eigen bestandssysteem.</p></div></details></li>
+      <li><p>In de JSON heeft gebruiker PixelPia geen lijst met scores in zich, zoals in het NoSQL-voorbeeld van hoofdstuk 1. Hoe weet de database dan welke scores van haar zijn?</p>
+        <details class="ans"><summary>Antwoord</summary><div><p>Via de kolom <code>gebruiker_id</code> in de tabel highscore. Elke score met <code>gebruiker_id = 1</code> is van PixelPia.</p></div></details></li>
+    </ol>
+    <label class="donebox"><input type="checkbox" id="done-h5" data-ch="h5"> Hoofdstuk 5 klaar</label>
+  </div>
+</section>
+
+<!-- ============ 6 ============ -->
+<section class="ch" id="h6">
+  <div class="ch-head"><span class="ch-num">06</span></div>
+  <h2>Gegevens opvragen met SELECT</h2>
+  <p class="intro">Met <code>SELECT</code> vraag je gegevens op. Het verandert niets aan de database, dus experimenteer gerust.</p>
+<div class="code"><pre><code class="sql">USE game;
+
+-- alles uit een tabel
+SELECT * FROM gebruiker;
+
+-- alleen bepaalde kolommen
+SELECT gebruikersnaam, land FROM gebruiker;
+
+-- alleen bepaalde rijen
+SELECT * FROM highscore WHERE level &gt;= 10;
+
+-- sorteren (DESC = van hoog naar laag) en beperken
+SELECT * FROM highscore ORDER BY score DESC LIMIT 3;</code></pre></div>
+
+  <h3>Voorwaarden in WHERE</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Teken</th><th>Betekenis</th><th>Voorbeeld</th></tr></thead>
+    <tbody>
+      <tr><td><code>=</code> <code>&lt;&gt;</code></td><td>gelijk aan, niet gelijk aan</td><td><code>land = 'Duitsland'</code></td></tr>
+      <tr><td><code>&gt;</code> <code>&lt;</code> <code>&gt;=</code> <code>&lt;=</code></td><td>groter, kleiner</td><td><code>score &gt; 20000</code></td></tr>
+      <tr><td><code>AND</code> <code>OR</code></td><td>beide waar, één van beide waar</td><td><code>land = 'België' AND level &gt; 5</code></td></tr>
+      <tr><td><code>LIKE</code></td><td>tekstpatroon; <code>%</code> is "wat dan ook"</td><td><code>gebruikersnaam LIKE 'P%'</code></td></tr>
+      <tr><td><code>BETWEEN</code></td><td>tussen twee waarden</td><td><code>score BETWEEN 5000 AND 10000</code></td></tr>
+      <tr><td><code>IS NULL</code></td><td>veld is leeg</td><td><code>land IS NULL</code></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Tellen en rekenen</h3>
+  <p>Functies als <code>COUNT</code>, <code>MAX</code>, <code>MIN</code>, <code>AVG</code> en <code>SUM</code> vatten veel rijen samen in één getal. Met <code>AS</code> geef je de uitkomst een leesbare naam.</p>
+<div class="code"><pre><code class="sql">SELECT COUNT(*) AS aantal_potjes, MAX(score) AS beste_score FROM highscore;</code></pre></div>
+
+  <div class="practice">
+    <h3>Oefenen</h3>
+    <p>Werk in de database <code>game</code>.</p>
+    <ol class="ex">
+      <li><p>Toon de gebruikersnaam en het land van alle gebruikers.</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">SELECT gebruikersnaam, land FROM gebruiker;</code></pre></div>
+<div class="result">10 rijen</div></div></details></li>
+      <li><p>Welke gebruikers komen uit België?</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">SELECT gebruikersnaam FROM gebruiker WHERE land = 'België';</code></pre></div>
+<div class="result">LunaLag, ZoëZoom</div></div></details></li>
+      <li><p>Toon alle highscores boven de 20.000 punten.</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">SELECT * FROM highscore WHERE score &gt; 20000;</code></pre></div>
+<div class="result">6 rijen</div></div></details></li>
+      <li><p>Wat zijn de vijf hoogste scores ooit?</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">SELECT score FROM highscore ORDER BY score DESC LIMIT 5;</code></pre></div>
+<div class="result">26900, 25480, 24100, 23990, 21400</div></div></details></li>
+      <li><p>Welke gebruikers hebben hun account aangemaakt vóór 1 april 2026?</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">SELECT gebruikersnaam, aangemaakt_op FROM gebruiker WHERE aangemaakt_op &lt; '2026-04-01';</code></pre></div>
+<div class="result">6 gebruikers: PixelPia t/m ZoëZoom</div></div></details></li>
+      <li><p>Welke gebruikersnaam begint met een S?</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">SELECT gebruikersnaam FROM gebruiker WHERE gebruikersnaam LIKE 'S%';</code></pre></div>
+<div class="result">SilentSam</div></div></details></li>
+      <li><p>Hoeveel gebruikers komen uit Nederland?</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">SELECT COUNT(*) FROM gebruiker WHERE land = 'Nederland';</code></pre></div>
+<div class="result">6</div></div></details></li>
+      <li><p>Wat zijn het aantal potjes, de hoogste, de laagste en de gemiddelde score (afgerond)?</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">SELECT COUNT(*), MAX(score), MIN(score), ROUND(AVG(score)) FROM highscore;</code></pre></div>
+<div class="result">27 · 26900 · 0 · 13256</div>
+<p>Een score van 0? Daar kijk je in hoofdstuk 8 naar.</p></div></details></li>
+    </ol>
+    <label class="donebox"><input type="checkbox" id="done-h6" data-ch="h6"> Hoofdstuk 6 klaar</label>
+  </div>
+</section>
+
+<!-- ============ 7 ============ -->
+<section class="ch" id="h7">
+  <div class="ch-head"><span class="ch-num">07</span></div>
+  <h2>Tabellen maken met CREATE, rijen toevoegen met INSERT</h2>
+  <p class="intro">Bij het maken van een tabel leg je per kolom vast wat erin mag: het datatype en de regels. De database houdt zich daar daarna streng aan.</p>
+
+  <h3>Datatypen</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Type</th><th>Voor</th><th>Voorbeeld</th></tr></thead>
+    <tbody>
+      <tr><td><code>INT</code></td><td>hele getallen</td><td>score, level, id's</td></tr>
+      <tr><td><code>DECIMAL(5,2)</code></td><td>exacte kommagetallen: 5 cijfers, waarvan 2 achter de komma</td><td>prijzen, zoals 8.15</td></tr>
+      <tr><td><code>VARCHAR(n)</code></td><td>tekst van maximaal n tekens</td><td>gebruikersnaam, e-mail</td></tr>
+      <tr><td><code>TEXT</code></td><td>lange tekst</td><td>een beschrijving, een bericht</td></tr>
+      <tr><td><code>DATE</code></td><td>datum (jjjj-mm-dd)</td><td>'2026-01-12'</td></tr>
+      <tr><td><code>DATETIME</code></td><td>datum en tijd</td><td>'2026-09-01 19:12:00'</td></tr>
+      <tr><td><code>BOOLEAN</code></td><td>waar of onwaar</td><td>is_beheerder</td></tr>
+    </tbody>
+  </table></div>
+  <p>Gebruik voor geld nooit <code>FLOAT</code>: dat type rekent met afrondingsfouten. <code>DECIMAL</code> is exact.</p>
+
+  <h3>Regels voor een kolom</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Regel</th><th>Betekenis</th></tr></thead>
+    <tbody>
+      <tr><td><code>PRIMARY KEY</code></td><td>Identificeert elke rij. Uniek en nooit leeg. Elke tabel heeft er één.</td></tr>
+      <tr><td><code>AUTO_INCREMENT</code></td><td>MySQL kiest zelf het volgende nummer.</td></tr>
+      <tr><td><code>NOT NULL</code></td><td>Mag niet leeg blijven.</td></tr>
+      <tr><td><code>UNIQUE</code></td><td>Mag maar één keer voorkomen in de kolom.</td></tr>
+      <tr><td><code>DEFAULT 10</code></td><td>Waarde als je zelf niets invult.</td></tr>
+      <tr><td><code>FOREIGN KEY … REFERENCES</code></td><td>Verwijst naar de primary key van een andere tabel. De database controleert of die rij bestaat.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Primary key en foreign key</h3>
+  <p>In de tabel <code>highscore</code> is <code>highscore_id</code> de <strong>primary key</strong>: elk potje heeft een eigen nummer. De kolom <code>gebruiker_id</code> is een <strong>foreign key</strong>: hij wijst naar <code>gebruiker.gebruiker_id</code>. Daardoor kun je geen score opslaan voor een speler die niet bestaat.</p>
+
+  <h3>Rijen toevoegen met INSERT</h3>
+<div class="code"><pre><code class="sql">INSERT INTO gebruiker (gebruiker_id, gebruikersnaam, email, land, aangemaakt_op)
+VALUES (12, 'RetroRik', 'rik@example.com', 'Nederland', '2026-10-08');
+
+-- highscore_id laat je weg: AUTO_INCREMENT vult het in. NOW() is de huidige tijd.
+INSERT INTO highscore (gebruiker_id, score, level, gespeeld_op)
+VALUES (12, 4200, 2, NOW());</code></pre></div>
+
+  <h3>Een tabel later aanpassen</h3>
+<div class="code"><pre><code class="sql">ALTER TABLE gebruiker ADD COLUMN geboortejaar INT;</code></pre></div>
+
+  <div class="practice">
+    <h3>Oefenen</h3>
+    <p>Werk op volgorde: sommige oefeningen bouwen op elkaar voort.</p>
+    <ol class="ex">
+      <li><p>Maak een tabel <code>achievement</code> voor behaalde prestaties: een automatisch nummer, de gebruiker, een naam (verplicht, max. 50 tekens), aantal punten (standaard 10) en de datum waarop hij behaald is.</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">CREATE TABLE achievement (
+    achievement_id INT         PRIMARY KEY AUTO_INCREMENT,
+    gebruiker_id   INT         NOT NULL,
+    naam           VARCHAR(50) NOT NULL,
+    punten         INT         DEFAULT 10,
+    behaald_op     DATE,
+    FOREIGN KEY (gebruiker_id) REFERENCES gebruiker(gebruiker_id)
+);</code></pre></div></div></details></li>
+      <li><p>Geef TurboTim (gebruiker 8) de achievement "Level 15 gehaald" van 50 punten op 30 september 2026, en LunaLag (3) "Eerste 20.000 punten" op 3 september 2026 zonder punten in te vullen. Hoeveel punten krijgt LunaLag?</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">INSERT INTO achievement (gebruiker_id, naam, punten, behaald_op)
+VALUES (8, 'Level 15 gehaald', 50, '2026-09-30');
+INSERT INTO achievement (gebruiker_id, naam, behaald_op)
+VALUES (3, 'Eerste 20.000 punten', '2026-09-03');</code></pre></div>
+<div class="result">LunaLag krijgt 10 punten (de DEFAULT)</div></div></details></li>
+      <li><p>Geef een achievement aan gebruiker 99. Wat gebeurt er, en waarom?</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="result">ERROR 1452: Cannot add or update a child row: a foreign key constraint fails</div>
+<p>Gebruiker 99 bestaat niet. De foreign key voorkomt dat er een achievement van niemand in de database komt.</p></div></details></li>
+      <li><p>Voeg gebruiker 11 toe: NewKid, newkid@example.com, Nederland, 9 oktober 2026.</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">INSERT INTO gebruiker (gebruiker_id, gebruikersnaam, email, land, aangemaakt_op)
+VALUES (11, 'NewKid', 'newkid@example.com', 'Nederland', '2026-10-09');</code></pre></div></div></details></li>
+      <li><p>Voeg nog een gebruiker toe met id 13 en gebruikersnaam PixelPia. Wat gebeurt er?</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="result">ERROR 1062: Duplicate entry 'PixelPia' for key 'gebruiker.gebruikersnaam'</div>
+<p>De kolom is <code>UNIQUE</code>: twee spelers met dezelfde naam mag niet.</p></div></details></li>
+      <li><p>Sla een highscore op voor gebruiker 11 met als score <code>'veel'</code>. Wat gebeurt er?</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="result">ERROR 1366: Incorrect integer value: 'veel' for column 'score'</div>
+<p>De kolom is <code>INT</code>: alleen hele getallen.</p></div></details></li>
+      <li><p>Voeg aan <code>gebruiker</code> een kolom <code>favoriete_kleur</code> toe en controleer met <code>DESCRIBE gebruiker;</code></p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">ALTER TABLE gebruiker ADD COLUMN favoriete_kleur VARCHAR(20);
+DESCRIBE gebruiker;</code></pre></div>
+<p>De nieuwe kolom is voor alle bestaande gebruikers leeg (<code>NULL</code>). In hoofdstuk 9 vul je hem.</p></div></details></li>
+    </ol>
+    <label class="donebox"><input type="checkbox" id="done-h7" data-ch="h7"> Hoofdstuk 7 klaar</label>
+  </div>
+</section>
+
+<!-- ============ 8 ============ -->
+<section class="ch" id="h8">
+  <div class="ch-head"><span class="ch-num">08</span></div>
+  <h2>Rijen verwijderen met DELETE</h2>
+  <p class="intro"><code>DELETE</code> haalt rijen weg. Er is geen prullenbak en geen ongedaan maken.</p>
+<div class="code"><pre><code class="sql">DELETE FROM highscore WHERE highscore_id = 26;</code></pre></div>
+  <div class="warn"><strong>Vergeet nooit de WHERE</strong><p><code>DELETE FROM highscore;</code> zonder <code>WHERE</code> wist álle highscores. Maak er een gewoonte van: schrijf eerst een <code>SELECT</code> met dezelfde <code>WHERE</code>. Zie je precies de rijen die weg moeten? Vervang dan <code>SELECT *</code> door <code>DELETE</code>.</p></div>
+  <p><strong>De foreign key beschermt je data.</strong> Heeft een gebruiker nog highscores, dan weigert MySQL die gebruiker te verwijderen: die scores zouden anders naar niemand wijzen. Verwijder eerst de highscores, of kies bij het maken van de tabel voor <code>ON DELETE CASCADE</code>. Dan gaan de highscores automatisch mee.</p>
+  <div class="note"><strong>MySQL Workbench: Error 1175?</strong><p>Workbench staat standaard in "safe update mode" en weigert een <code>DELETE</code> of <code>UPDATE</code> die niet op de primary key filtert. Filter op het id, of zet het tijdelijk uit met <code>SET SQL_SAFE_UPDATES = 0;</code></p></div>
+
+  <div class="practice">
+    <h3>Oefenen</h3>
+    <ol class="ex">
+      <li><p>Eén potje heeft score 0: een bug in de game. Zoek het op en verwijder alleen die rij.</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">SELECT * FROM highscore WHERE score = 0;          -- highscore_id 26
+DELETE FROM highscore WHERE highscore_id = 26;</code></pre></div></div></details></li>
+      <li><p>Verwijder gebruiker 9 (MoMoney). Wat gebeurt er, en waarom?</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="result">ERROR 1451: Cannot delete or update a parent row: a foreign key constraint fails</div>
+<p>MoMoney heeft nog highscores. Die zouden zonder eigenaar achterblijven.</p></div></details></li>
+      <li><p>Verwijder gebruiker 10 (SilentSam). Waarom lukt dit wel?</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">DELETE FROM gebruiker WHERE gebruiker_id = 10;</code></pre></div>
+<p>SilentSam heeft nooit een potje gespeeld. Er wijst geen enkele highscore naar hem.</p></div></details></li>
+      <li><p>Wat doet <code>DELETE FROM achievement;</code>? Voer het niet uit.</p>
+        <details class="ans"><summary>Antwoord</summary><div><p>Het verwijdert alle rijen uit <code>achievement</code>. De tabel zelf blijft bestaan, maar is leeg. Wil je de hele tabel weg, dan gebruik je <code>DROP TABLE achievement;</code></p></div></details></li>
+    </ol>
+    <label class="donebox"><input type="checkbox" id="done-h8" data-ch="h8"> Hoofdstuk 8 klaar</label>
+  </div>
+</section>
+
+<!-- ============ 9 ============ -->
+<section class="ch" id="h9">
+  <div class="ch-head"><span class="ch-num">09</span></div>
+  <h2>Gegevens wijzigen met UPDATE</h2>
+  <p class="intro">Met <code>UPDATE</code> verander je waarden in bestaande rijen. Ook hier geldt: zonder <code>WHERE</code> verander je élke rij.</p>
+<div class="code"><pre><code class="sql">-- één waarde aanpassen
+UPDATE gebruiker SET land = 'Duitsland' WHERE gebruiker_id = 2;
+
+-- meerdere kolommen tegelijk
+UPDATE gebruiker SET land = 'Nederland', favoriete_kleur = 'groen' WHERE gebruiker_id = 2;
+
+-- rekenen met de huidige waarde
+UPDATE highscore SET score = score + 100 WHERE highscore_id = 1;</code></pre></div>
+
+  <div class="practice">
+    <h3>Oefenen</h3>
+    <ol class="ex">
+      <li><p>GlitchGirl (gebruiker 7) is verhuisd naar België. Pas dit aan.</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">UPDATE gebruiker SET land = 'België' WHERE gebruiker_id = 7;</code></pre></div></div></details></li>
+      <li><p>CaptainCrash krijgt 500 bonuspunten op highscore 13. Wat is zijn nieuwe score?</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">UPDATE highscore SET score = score + 500 WHERE highscore_id = 13;
+SELECT score FROM highscore WHERE highscore_id = 13;</code></pre></div>
+<div class="result">3390</div></div></details></li>
+      <li><p>CaptainCrash (gebruiker 4) wil voortaan LunaLag heten. Wat gebeurt er?</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="result">ERROR 1062: Duplicate entry 'LunaLag' for key 'gebruiker.gebruikersnaam'</div>
+<p>Die naam is al bezet. De <code>UNIQUE</code>-regel geldt ook bij een UPDATE.</p></div></details></li>
+      <li><p>Geef alle Belgische spelers de favoriete kleur paars. Hoeveel rijen veranderen er?</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">UPDATE gebruiker SET favoriete_kleur = 'paars' WHERE land = 'België';</code></pre></div>
+<div class="result">3 rijen: LunaLag, ZoëZoom en GlitchGirl (sinds oefening 1)</div>
+<p>Workbench geeft hier Error 1175, omdat je niet op het id filtert. Zie de tip in hoofdstuk 8.</p></div></details></li>
+      <li><p>Wat zou <code>UPDATE highscore SET score = 0;</code> doen?</p>
+        <details class="ans"><summary>Antwoord</summary><div><p>Alle scores van alle spelers op 0 zetten. Het hele leaderboard is weg.</p></div></details></li>
+    </ol>
+    <label class="donebox"><input type="checkbox" id="done-h9" data-ch="h9"> Hoofdstuk 9 klaar</label>
+  </div>
+</section>
+
+<!-- ============ 10 ============ -->
+<section class="ch" id="h10">
+  <div class="ch-head"><span class="ch-num">10</span></div>
+  <h2>De supermarkt en relaties</h2>
+  <p class="intro">Nu wordt het echt: zes tabellen met de kassabonnen van twee AH to Go-winkels in Tilburg en Eindhoven, van januari tot en met juni 2023. Dat zijn 282 klanten, 165 producten en 12.395 transacties.</p>
+
+  <h3>Drie soorten relaties</h3>
+  <p>Tabellen hangen op drie manieren met elkaar samen. Dat heet de <strong>kardinaliteit</strong> van een relatie.</p>
+  <figure class="fig">
+    <svg viewBox="0 0 700 300" role="img" aria-label="Drie soorten relaties: 1-op-1, 1-op-veel en veel-op-veel">
+      <text class="cap" x="20" y="28">1-op-1</text>
+      <text class="capm" x="20" y="48">Eén medewerker heeft precies één personeelspas.</text>
+      <rect class="box" x="20" y="62" width="150" height="40" rx="6"/><text class="t" x="34" y="87">medewerker</text>
+      <rect class="box" x="300" y="62" width="150" height="40" rx="6"/><text class="t" x="314" y="87">personeelspas</text>
+      <path class="ln" d="M170 82 H300"/><text class="card-l" x="178" y="76">1</text><text class="card-l" x="286" y="76">1</text>
+
+      <text class="cap" x="20" y="134">1-op-veel</text>
+      <text class="capm" x="20" y="154">Eén klant doet veel transacties; elke transactie is van één klant.</text>
+      <rect class="box" x="20" y="168" width="150" height="40" rx="6"/><text class="t" x="34" y="193">klanten</text>
+      <rect class="box" x="300" y="168" width="150" height="40" rx="6"/><text class="t" x="314" y="193">transactie</text>
+      <path class="ln" d="M170 188 H300"/><text class="card-l" x="178" y="182">1</text><text class="card-l" x="286" y="182">n</text>
+
+      <text class="cap" x="20" y="240">veel-op-veel</text>
+      <text class="capm" x="20" y="260">Een bon bevat veel producten; een product staat op veel bonnen.</text>
+      <rect class="box" x="20" y="272" width="150" height="22" rx="4"/><text class="a" x="30" y="288">transactie</text>
+      <rect class="box-acc" x="250" y="272" width="170" height="22" rx="4"/><text class="ak" x="260" y="288">trans_prod (koppel)</text>
+      <rect class="box" x="500" y="272" width="150" height="22" rx="4"/><text class="a" x="510" y="288">producten</text>
+      <path class="ln" d="M170 283 H250"/><path class="ln" d="M420 283 H500"/>
+      <text class="card-l" x="176" y="279">1</text><text class="card-l" x="238" y="279">n</text>
+      <text class="card-l" x="428" y="279">n</text><text class="card-l" x="488" y="279">1</text>
+    </svg>
+    <figcaption>Een veel-op-veel-relatie kun je niet rechtstreeks opslaan. Je lost hem op met een koppeltabel: twee 1-op-veel-relaties.</figcaption>
+  </figure>
+  <div class="tbl"><table>
+    <thead><tr><th>Relatie</th><th>Hoe herken je hem?</th><th>Hoe sla je hem op?</th></tr></thead>
+    <tbody>
+      <tr><td><strong>1-op-1</strong></td><td>Bij elke rij links hoort precies één rij rechts, en andersom.</td><td>Vaak gewoon in één tabel. Apart alleen als de gegevens gescheiden moeten blijven, zoals gevoelige gegevens.</td></tr>
+      <tr><td><strong>1-op-veel</strong></td><td>Eén ouder, veel kinderen.</td><td>Foreign key in de "veel"-tabel (het kind).</td></tr>
+      <tr><td><strong>Veel-op-veel</strong></td><td>Aan beide kanten "veel".</td><td>Een koppeltabel met twee foreign keys.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>De supermarkt-database</h3>
+  <figure class="fig">
+    <svg viewBox="0 0 700 470" role="img" aria-label="ERD supermarkt: klanten, medewerkers en locatie hebben elk een 1-op-veel-relatie met transactie; transactie en producten zijn gekoppeld via trans_prod">
+      <rect class="box" x="20" y="16" width="190" height="136" rx="6"/>
+      <text class="t" x="32" y="38">klanten</text><line class="rule" x1="30" y1="48" x2="200" y2="48"/>
+      <text class="ak" x="32" y="68">PK klant_id</text><text class="a" x="32" y="86">voornaam</text><text class="a" x="32" y="102">achternaam</text><text class="a" x="32" y="118">adres, woonplaats</text><text class="a" x="32" y="134">geb_datum</text>
+
+      <rect class="box" x="255" y="16" width="190" height="90" rx="6"/>
+      <text class="t" x="267" y="38">medewerkers</text><line class="rule" x1="265" y1="48" x2="435" y2="48"/>
+      <text class="ak" x="267" y="68">PK mdw_id</text><text class="a" x="267" y="86">voornaam, achternaam</text>
+
+      <rect class="box" x="490" y="16" width="190" height="90" rx="6"/>
+      <text class="t" x="502" y="38">locatie</text><line class="rule" x1="500" y1="48" x2="670" y2="48"/>
+      <text class="ak" x="502" y="68">PK loc_id</text><text class="a" x="502" y="86">naam, plaats</text>
+
+      <rect class="box" x="255" y="190" width="190" height="122" rx="6"/>
+      <text class="t" x="267" y="212">transactie</text><line class="rule" x1="265" y1="222" x2="435" y2="222"/>
+      <text class="ak" x="267" y="242">PK trans_id</text><text class="a" x="267" y="260">datum</text><text class="ak" x="267" y="276">FK klant_id</text><text class="ak" x="267" y="292">FK medew_id</text><text class="ak" x="267" y="308">FK loc_id</text>
+
+      <rect class="box-acc" x="255" y="360" width="190" height="96" rx="6"/>
+      <text class="t" x="267" y="382">trans_prod</text><line class="rule" x1="265" y1="392" x2="435" y2="392"/>
+      <text class="ak" x="267" y="412">PK FK trans_id</text><text class="ak" x="267" y="428">PK FK prod_id</text><text class="a" x="267" y="444">aantal</text>
+
+      <rect class="box" x="490" y="330" width="190" height="126" rx="6"/>
+      <text class="t" x="502" y="352">producten</text><line class="rule" x1="500" y1="362" x2="670" y2="362"/>
+      <text class="ak" x="502" y="382">PK product_id</text><text class="a" x="502" y="400">naam, merk</text><text class="a" x="502" y="416">categorie</text><text class="a" x="502" y="432">verkoopprijs</text><text class="a" x="502" y="448">inkoopprijs, leverancier</text>
+
+      <path class="ln" d="M115 152 V250 H255"/><text class="card-l" x="122" y="170">1</text><text class="card-l" x="240" y="244">n</text>
+      <path class="ln" d="M350 106 V190"/><text class="card-l" x="357" y="124">1</text><text class="card-l" x="357" y="184">n</text>
+      <path class="ln" d="M585 106 V250 H445"/><text class="card-l" x="592" y="124">1</text><text class="card-l" x="452" y="244">n</text>
+      <path class="ln" d="M350 312 V360"/><text class="card-l" x="357" y="328">1</text><text class="card-l" x="357" y="354">n</text>
+      <path class="ln" d="M490 408 H445"/><text class="card-l" x="478" y="402">1</text><text class="card-l" x="450" y="402">n</text>
+    </svg>
+    <figcaption>Klant, medewerker en locatie hebben elk een 1-op-veel-relatie met transactie. Transactie en product zijn veel-op-veel, via de koppeltabel trans_prod.</figcaption>
+  </figure>
+
+  <h3>Importeren</h3>
+  <div class="dl">
+    <button class="btn" type="button" data-file="supermarkt.json">Download supermarkt.json <span class="size">1,9 MB</span></button>
+    <span class="dl-msg" data-msg-for="supermarkt.json"></span>
+  </div>
+  <p>Dezelfde route als in hoofdstuk 5. Kopieer eerst het bestand de container in:</p>
+<div class="code"><pre><code class="sh">docker cp supermarkt.json mysql-db:/var/lib/mysql-files/supermarkt.json</code></pre></div>
+  <p>Voer daarna het importscript uit als één script. Het maakt de tabellen met primary en foreign keys en vult ze. Na een paar seconden zie je de controle: 282 klanten, 12.395 transacties en 14.935 bonregels.</p>
+  <details class="ans" style="margin-bottom:20px"><summary>Toon het importscript</summary><div>
+<div class="code"><pre><code class="sql">CREATE DATABASE supermarkt;
+USE supermarkt;
+
+CREATE TABLE klanten (
+    klant_id   INT PRIMARY KEY,
+    voornaam   VARCHAR(50),
+    achternaam VARCHAR(50),
+    adres      VARCHAR(100),
+    woonplaats VARCHAR(50),
+    geb_datum  DATE
+);
+
+CREATE TABLE producten (
+    product_id   INT PRIMARY KEY,
+    naam         VARCHAR(100),
+    merk         VARCHAR(50),
+    categorie    VARCHAR(50),
+    verkoopprijs DECIMAL(5,2),
+    inkoopprijs  DECIMAL(5,2),
+    leverancier  VARCHAR(50)
+);
+
+CREATE TABLE medewerkers (
+    mdw_id     INT PRIMARY KEY,
+    voornaam   VARCHAR(50),
+    achternaam VARCHAR(50)
+);
+
+CREATE TABLE locatie (
+    loc_id INT PRIMARY KEY,
+    naam   VARCHAR(100),
+    plaats VARCHAR(50)
+);
+
+CREATE TABLE transactie (
+    trans_id INT PRIMARY KEY,
+    datum    DATE,
+    klant_id INT,
+    medew_id INT,
+    loc_id   INT,
+    FOREIGN KEY (klant_id) REFERENCES klanten(klant_id),
+    FOREIGN KEY (medew_id) REFERENCES medewerkers(mdw_id),
+    FOREIGN KEY (loc_id)   REFERENCES locatie(loc_id)
+);
+
+CREATE TABLE trans_prod (
+    trans_id INT,
+    prod_id  INT,
+    aantal   INT,
+    PRIMARY KEY (trans_id, prod_id),
+    FOREIGN KEY (trans_id) REFERENCES transactie(trans_id),
+    FOREIGN KEY (prod_id)  REFERENCES producten(product_id)
+);
+
+SET @json = CONVERT(LOAD_FILE('/var/lib/mysql-files/supermarkt.json') USING utf8mb4);
+SELECT @json IS NOT NULL AS bestand_gevonden;
+
+INSERT INTO klanten
+SELECT * FROM JSON_TABLE(@json, '$.klanten[*]' COLUMNS (
+    klant_id   INT          PATH '$.klant_id',
+    voornaam   VARCHAR(50)  PATH '$.voornaam',
+    achternaam VARCHAR(50)  PATH '$.achternaam',
+    adres      VARCHAR(100) PATH '$.adres',
+    woonplaats VARCHAR(50)  PATH '$.woonplaats',
+    geb_datum  DATE         PATH '$.geb_datum'
+)) AS j;
+
+INSERT INTO producten
+SELECT * FROM JSON_TABLE(@json, '$.producten[*]' COLUMNS (
+    product_id   INT          PATH '$.product_id',
+    naam         VARCHAR(100) PATH '$.naam',
+    merk         VARCHAR(50)  PATH '$.merk',
+    categorie    VARCHAR(50)  PATH '$.categorie',
+    verkoopprijs DECIMAL(5,2) PATH '$.verkoopprijs',
+    inkoopprijs  DECIMAL(5,2) PATH '$.inkoopprijs',
+    leverancier  VARCHAR(50)  PATH '$.leverancier'
+)) AS j;
+
+INSERT INTO medewerkers
+SELECT * FROM JSON_TABLE(@json, '$.medewerkers[*]' COLUMNS (
+    mdw_id     INT         PATH '$.mdw_id',
+    voornaam   VARCHAR(50) PATH '$.voornaam',
+    achternaam VARCHAR(50) PATH '$.achternaam'
+)) AS j;
+
+INSERT INTO locatie
+SELECT * FROM JSON_TABLE(@json, '$.locatie[*]' COLUMNS (
+    loc_id INT          PATH '$.loc_id',
+    naam   VARCHAR(100) PATH '$.naam',
+    plaats VARCHAR(50)  PATH '$.plaats'
+)) AS j;
+
+INSERT INTO transactie
+SELECT * FROM JSON_TABLE(@json, '$.transactie[*]' COLUMNS (
+    trans_id INT  PATH '$.trans_id',
+    datum    DATE PATH '$.datum',
+    klant_id INT  PATH '$.klant_id',
+    medew_id INT  PATH '$.medew_id',
+    loc_id   INT  PATH '$.loc_id'
+)) AS j;
+
+INSERT INTO trans_prod
+SELECT * FROM JSON_TABLE(@json, '$.trans_prod[*]' COLUMNS (
+    trans_id INT PATH '$.trans_id',
+    prod_id  INT PATH '$.prod_id',
+    aantal   INT PATH '$.aantal'
+)) AS j;
+
+SELECT (SELECT COUNT(*) FROM klanten)    AS klanten,
+       (SELECT COUNT(*) FROM transactie) AS transacties,
+       (SELECT COUNT(*) FROM trans_prod) AS bonregels;</code></pre></div>
+  <p>Let op de volgorde: eerst de tabellen zonder foreign keys (klanten, producten, medewerkers, locatie), dan transactie, en als laatste trans_prod. Een kind kan pas verwijzen naar een ouder die al bestaat.</p>
+  </div></details>
+
+  <h3>Tabellen combineren met JOIN</h3>
+  <p>Een relatie gebruik je in een query met <code>JOIN</code>: je koppelt de foreign key aan de primary key waar hij naar wijst. Korte namen achter de tabel (<code>t</code>, <code>k</code>) schelen typwerk.</p>
+<div class="code"><pre><code class="sql">SELECT t.trans_id, t.datum, k.voornaam, k.achternaam
+FROM transactie t
+JOIN klanten k ON k.klant_id = t.klant_id
+LIMIT 5;</code></pre></div>
+
+  <div class="practice">
+    <h3>Oefenen</h3>
+    <p>Werk in de database <code>supermarkt</code> (<code>USE supermarkt;</code>).</p>
+    <ol class="ex">
+      <li><p>Welke soort relatie is er tussen: (a) klanten en transactie, (b) locatie en transactie, (c) transactie en producten?</p>
+        <details class="ans"><summary>Antwoord</summary><div><p>(a) 1-op-veel, (b) 1-op-veel, (c) veel-op-veel, opgelost met de koppeltabel <code>trans_prod</code>.</p></div></details></li>
+      <li><p>Waarom staat er geen kolom <code>product_id</code> in de tabel <code>transactie</code>?</p>
+        <details class="ans"><summary>Antwoord</summary><div><p>Een bon kan meerdere producten bevatten. In één kolom past maar één product. Daarom staat elk product op een bon als aparte rij in <code>trans_prod</code>, met het aantal erbij.</p></div></details></li>
+      <li><p>Hoe heet klant 240001, en hoeveel transacties heeft die gedaan?</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">SELECT k.voornaam, k.achternaam, COUNT(*) AS transacties
+FROM klanten k
+JOIN transactie t ON t.klant_id = k.klant_id
+WHERE k.klant_id = 240001
+GROUP BY k.klant_id, k.voornaam, k.achternaam;</code></pre></div>
+<div class="result">Aadhaya Sahan · 55 transacties</div></div></details></li>
+      <li><p>Welke producten staan op bon 1110005, en hoeveel van elk?</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">SELECT p.naam, tp.aantal
+FROM trans_prod tp
+JOIN producten p ON p.product_id = tp.prod_id
+WHERE tp.trans_id = 1110005;</code></pre></div>
+<div class="result">Makreel 2 · Zachte kaas 1 · Fanta zero 2 liter 1</div></div></details></li>
+      <li><p>Op hoeveel verschillende bonnen staat Gerookte zalm?</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">SELECT COUNT(DISTINCT tp.trans_id) AS bonnen
+FROM trans_prod tp
+JOIN producten p ON p.product_id = tp.prod_id
+WHERE p.naam = 'Gerookte zalm';</code></pre></div>
+<div class="result">265</div></div></details></li>
+      <li><p>In deze database zit geen 1-op-1-relatie. Bedenk er een die de supermarkt zou kunnen toevoegen.</p>
+        <details class="ans"><summary>Voorbeeldantwoord</summary><div><p>Medewerker en personeelspas, of klant en bonuskaart (als elke klant precies één kaart heeft). Ook denkbaar: medewerker en salarisgegevens, apart gezet omdat niet iedereen die mag zien.</p></div></details></li>
+    </ol>
+    <label class="donebox"><input type="checkbox" id="done-h10" data-ch="h10"> Hoofdstuk 10 klaar</label>
+  </div>
+</section>
+
+<!-- ============ 11 ============ -->
+<section class="ch" id="h11">
+  <div class="ch-head"><span class="ch-num">11</span></div>
+  <h2>Op zoek naar patronen</h2>
+  <p class="intro">Een database is meer dan een archief. Met <code>GROUP BY</code> zie je patronen die op geen enkele losse kassabon staan.</p>
+  <p><code>GROUP BY</code> maakt groepjes van rijen met dezelfde waarde, en een functie als <code>COUNT</code> of <code>SUM</code> vat elk groepje samen. Alles wat in je <code>SELECT</code> staat en geen telling is, zet je ook in de <code>GROUP BY</code>.</p>
+<div class="code"><pre><code class="sql">-- aantal klanten per woonplaats, grootste eerst
+SELECT woonplaats, COUNT(*) AS klanten
+FROM klanten
+GROUP BY woonplaats
+ORDER BY klanten DESC;</code></pre></div>
+  <p>Zet aan het begin van je sessie de taal voor dag- en maandnamen op Nederlands. Dan krijg je "dinsdag" in plaats van "Tuesday":</p>
+<div class="code"><pre><code class="sql">SET lc_time_names = 'nl_NL';</code></pre></div>
+
+  <div class="practice">
+    <h3>Onderzoeken</h3>
+    <p>Probeer eerst zelf een query te bedenken. Bekijk daarna het antwoord en vooral de uitleg: wat zegt dit over de winkel?</p>
+    <ol class="ex">
+      <li><p>Op welke dag van de week is het het drukst? En wanneer het rustigst?</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">SET lc_time_names = 'nl_NL';
+SELECT DAYNAME(datum) AS dag, COUNT(*) AS transacties
+FROM transactie
+GROUP BY DAYNAME(datum)
+ORDER BY transacties DESC;</code></pre></div>
+<div class="result">dinsdag 2245 · zaterdag 2228 · … · maandag 1332</div>
+<p>Dinsdag is bijna net zo druk als zaterdag, en maandag het rustigst. Handig voor het rooster van medewerkers.</p></div></details></li>
+      <li><p>Hoe ontwikkelt de omzet zich per maand?</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">SELECT MONTH(t.datum) AS maand, SUM(tp.aantal * p.verkoopprijs) AS omzet
+FROM transactie t
+JOIN trans_prod tp ON tp.trans_id = t.trans_id
+JOIN producten p   ON p.product_id = tp.prod_id
+GROUP BY MONTH(t.datum)
+ORDER BY maand;</code></pre></div>
+<div class="result">januari € 6.570,32 (hoogst) · februari € 6.035,51 (laagst)</div>
+<p>De omzet is opvallend stabiel: elke maand tussen de € 6.000 en € 6.600. Februari is laag, maar heeft ook maar 28 dagen.</p></div></details></li>
+      <li><p>Hoe groot is een gemiddelde bon, in producten en in euro's?</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">SELECT ROUND(AVG(stuks), 2) AS producten, ROUND(AVG(bedrag), 2) AS euro
+FROM (
+    SELECT tp.trans_id, SUM(tp.aantal) AS stuks, SUM(tp.aantal * p.verkoopprijs) AS bedrag
+    FROM trans_prod tp
+    JOIN producten p ON p.product_id = tp.prod_id
+    GROUP BY tp.trans_id
+) AS bonnen;</code></pre></div>
+<div class="result">1,27 producten · € 3,02</div>
+<p>Dit is geen weekboodschap: mensen halen iets kleins voor onderweg. Dat past bij een to-go-winkel op een station en in het centrum. De query gebruikt een <em>subquery</em>: eerst één rij per bon, daarna het gemiddelde daarvan.</p></div></details></li>
+      <li><p>Waar doen klanten uit Goirle en uit Nuenen hun boodschappen?</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">SELECT k.woonplaats, l.plaats AS winkel, COUNT(*) AS transacties
+FROM transactie t
+JOIN klanten k ON k.klant_id = t.klant_id
+JOIN locatie l ON l.loc_id = t.loc_id
+WHERE k.woonplaats IN ('Goirle', 'Nuenen')
+GROUP BY k.woonplaats, l.plaats;</code></pre></div>
+<div class="result">Goirle → Tilburg 656, Eindhoven 1 · Nuenen → Eindhoven 607</div>
+<p>Klanten zijn honkvast: ze gaan naar de winkel bij hen in de buurt. Goirle ligt naast Tilburg, Nuenen naast Eindhoven.</p></div></details></li>
+      <li><p>Welke productcategorie levert de meeste winst op (verkoopprijs min inkoopprijs, keer het aantal)?</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">SELECT p.categorie, SUM(tp.aantal * (p.verkoopprijs - p.inkoopprijs)) AS winst
+FROM trans_prod tp
+JOIN producten p ON p.product_id = tp.prod_id
+GROUP BY p.categorie
+ORDER BY winst DESC
+LIMIT 3;</code></pre></div>
+<div class="result">Broodbeleg vers € 2.371,21 · Zuivel € 2.068,04 · Frisdrank € 1.983,84</div></div></details></li>
+      <li><p>Zijn er producten die nooit verkocht zijn?</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">SELECT p.naam
+FROM producten p
+LEFT JOIN trans_prod tp ON tp.prod_id = p.product_id
+WHERE tp.prod_id IS NULL;</code></pre></div>
+<div class="result">Geen rijen: elk product is minstens één keer verkocht</div>
+<p>Een <code>LEFT JOIN</code> houdt álle producten, ook die zonder bonregel. Bij die producten is <code>tp.prod_id</code> leeg. Ook "geen resultaat" is een antwoord.</p></div></details></li>
+      <li><p>Een collega zegt: "50-plussers kopen veel meer frisdrank dan jongeren." Klopt dat?</p>
+        <details class="ans"><summary>Antwoord</summary><div>
+<div class="code"><pre><code class="sql">SELECT CASE
+         WHEN TIMESTAMPDIFF(YEAR, k.geb_datum, '2023-06-30') &lt; 30 THEN 'onder 30'
+         WHEN TIMESTAMPDIFF(YEAR, k.geb_datum, '2023-06-30') &lt; 50 THEN '30-49'
+         ELSE '50+'
+       END AS leeftijd,
+       COUNT(DISTINCT k.klant_id) AS klanten,
+       SUM(CASE WHEN p.categorie = 'Frisdrank' THEN tp.aantal ELSE 0 END) AS frisdrank
+FROM klanten k
+JOIN transactie t  ON t.klant_id = k.klant_id
+JOIN trans_prod tp ON tp.trans_id = t.trans_id
+JOIN producten p   ON p.product_id = tp.prod_id
+GROUP BY leeftijd;</code></pre></div>
+<div class="result">50+: 150 klanten, 886 frisdrank · 30-49: 96 klanten, 565 · onder 30: 36 klanten, 233</div>
+<p>In totalen lijkt het te kloppen: 886 tegen 233. Maar er zijn ook veel meer 50-plussers. Deel je door het aantal klanten, dan koopt elke groep ongeveer evenveel: 5,9, 5,9 en 6,5 per klant. Jongeren kopen per persoon zelfs iets meer. Vergelijk groepen dus altijd per klant, niet in totalen.</p></div></details></li>
+      <li><p>Bedenk zelf een vraag die je aan deze data wilt stellen, en zoek het antwoord. Tip: combineer medewerkers met transacties, of producten met locaties.</p>
+        <details class="ans"><summary>Ideeën</summary><div><p>Welke medewerker rekent de meeste transacties af? Wordt er in Tilburg ander brood gekocht dan in Eindhoven? Wie is de trouwste klant? Bij welke leverancier haalt de winkel de meeste producten vandaan?</p></div></details></li>
+    </ol>
+    <label class="donebox"><input type="checkbox" id="done-h11" data-ch="h11"> Hoofdstuk 11 klaar</label>
+  </div>
+</section>
+
+<footer>SQL Werkplaats · Fontys ICT · Semester 1. Getest met MySQL 8. De supermarktdata is fictief.</footer>
+</div>
+</main>
+</div>
+
+<script>
+(function(){
+  // ---------- SQL-kleuring ----------
+  var KW = "SELECT|FROM|WHERE|AND|OR|NOT|ORDER|BY|GROUP|HAVING|LIMIT|DESC|ASC|INSERT|INTO|VALUES|UPDATE|SET|DELETE|CREATE|DATABASE|TABLE|USE|DROP|ALTER|ADD|COLUMN|PRIMARY|KEY|FOREIGN|REFERENCES|AUTO_INCREMENT|NULL|IS|UNIQUE|DEFAULT|INT|VARCHAR|DECIMAL|DATE|DATETIME|TEXT|BOOLEAN|JOIN|LEFT|ON|AS|IN|LIKE|BETWEEN|DISTINCT|CASE|WHEN|THEN|ELSE|END|COUNT|SUM|AVG|MAX|MIN|ROUND|JSON_TABLE|COLUMNS|PATH|LOAD_FILE|CONVERT|USING|SHOW|DATABASES|DESCRIBE|VERSION|NOW|MONTH|DAYNAME|TIMESTAMPDIFF|YEAR|USING|exit";
+  var re = new RegExp("(--[^\\n]*)|('(?:[^'\\\\]|\\\\.)*')|\\b(" + KW + ")\\b|\\b(\\d+(?:\\.\\d+)?)\\b", "g");
+  function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+  document.querySelectorAll("code.sql").forEach(function(el){
+    var src = el.textContent, out = "", last = 0, m;
+    re.lastIndex = 0;
+    while ((m = re.exec(src))){
+      out += esc(src.slice(last, m.index));
+      if (m[1]) out += '<span class="c">' + esc(m[1]) + "</span>";
+      else if (m[2]) out += '<span class="s">' + esc(m[2]) + "</span>";
+      else if (m[3]) out += '<span class="k">' + esc(m[3]) + "</span>";
+      else out += '<span class="nu">' + esc(m[4]) + "</span>";
+      last = re.lastIndex;
+    }
+    el.innerHTML = out + esc(src.slice(last));
+  });
+  document.querySelectorAll("code.sh").forEach(function(el){
+    el.innerHTML = el.innerHTML.replace(/^(#.*)$/gm, '<span class="c">$1</span>');
+  });
+
+  // ---------- kopieerknoppen ----------
+  document.querySelectorAll(".code").forEach(function(box){
+    var code = box.querySelector("code");
+    var lang = code.className === "sh" ? "terminal" : code.className;
+    var tag = document.createElement("span"); tag.className = "lang"; tag.textContent = lang;
+    var b = document.createElement("button"); b.type = "button"; b.className = "copy"; b.textContent = "Kopieer";
+    b.addEventListener("click", function(){
+      var text = code.textContent;
+      function ok(){ b.textContent = "Gekopieerd"; setTimeout(function(){ b.textContent = "Kopieer"; }, 1600); }
+      function fallback(){
+        var r = document.createRange(); r.selectNodeContents(code);
+        var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+        b.textContent = "Geselecteerd: Ctrl+C";
+        setTimeout(function(){ b.textContent = "Kopieer"; }, 2400);
+      }
+      try { navigator.clipboard.writeText(text).then(ok, fallback); } catch(e){ fallback(); }
+    });
+    box.appendChild(tag); box.appendChild(b);
+  });
+
+  // ---------- voortgang ----------
+  var KEY = "sqlwerkplaats-klaar";
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch(e){ state = {}; }
+  var boxes = document.querySelectorAll(".donebox input");
+  function render(){
+    var n = 0;
+    boxes.forEach(function(cb){
+      var on = !!state[cb.dataset.ch]; cb.checked = on; if (on) n++;
+      var link = document.querySelector('#tocList a[href="#' + cb.dataset.ch + '"] .done');
+      if (link) link.textContent = on ? "✓" : "";
+    });
+    document.getElementById("progressText").textContent = n + " van 11 hoofdstukken klaar";
+    document.getElementById("progressBar").style.width = (n / 11 * 100) + "%";
+  }
+  boxes.forEach(function(cb){
+    cb.addEventListener("change", function(){
+      state[cb.dataset.ch] = cb.checked;
+      try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){}
+      render();
+    });
+  });
+  render();
+
+  // ---------- actief hoofdstuk in de zijbalk ----------
+  var links = document.querySelectorAll("#tocList a");
+  if ("IntersectionObserver" in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if (en.isIntersecting){
+          links.forEach(function(a){ a.classList.toggle("active", a.getAttribute("href") === "#" + en.target.id); });
+        }
+      });
+    }, { rootMargin: "-30% 0px -60% 0px" });
+    document.querySelectorAll("section.ch").forEach(function(s){ io.observe(s); });
+  }
+
+  // ---------- downloads ----------
+  var dlButtons = document.querySelectorAll("[data-file]");
+  function msg(file, text){ var el = document.querySelector('[data-msg-for="' + file + '"]'); if (el) el.textContent = text; }
+  var dlPromise = (window.claude && window.claude.use) ? window.claude.use("downloads") : Promise.resolve(null);
+  dlButtons.forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var file = btn.dataset.file;
+      dlPromise.then(function(dl){
+        if (!dl){ msg(file, "Downloaden werkt niet in deze weergave. Haal " + file + " van Canvas."); return; }
+        msg(file, "Bestand ophalen…");
+        fetch(file).then(function(r){ if (!r.ok) throw new Error(); return r.blob(); })
+          .then(function(blob){ return dl.save({ filename: file, data: blob }); })
+          .then(function(){ msg(file, "Opgeslagen. Kijk in je map Downloads."); })
+          .catch(function(err){
+            var c = err && err.code;
+            if (c === "declined") msg(file, "Niet opgeslagen.");
+            else if (c === "rate_limited") msg(file, "Er staat al een downloadvraag open.");
+            else msg(file, "Downloaden lukt hier niet. Haal " + file + " van Canvas.");
+          });
+      });
+    });
+  });
+})();
+</script>
+
+</body></html>

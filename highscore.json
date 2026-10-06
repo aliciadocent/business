@@ -1,0 +1,265 @@
+{
+  "gebruikers": [
+    {
+      "gebruiker_id": 1,
+      "gebruikersnaam": "PixelPia",
+      "email": "pia@example.com",
+      "land": "Nederland",
+      "aangemaakt_op": "2026-01-12"
+    },
+    {
+      "gebruiker_id": 2,
+      "gebruikersnaam": "NoScopeNoah",
+      "email": "noah@example.com",
+      "land": "Nederland",
+      "aangemaakt_op": "2026-01-15"
+    },
+    {
+      "gebruiker_id": 3,
+      "gebruikersnaam": "LunaLag",
+      "email": "luna@example.com",
+      "land": "België",
+      "aangemaakt_op": "2026-02-03"
+    },
+    {
+      "gebruiker_id": 4,
+      "gebruikersnaam": "CaptainCrash",
+      "email": "kevin@example.com",
+      "land": "Nederland",
+      "aangemaakt_op": "2026-02-20"
+    },
+    {
+      "gebruiker_id": 5,
+      "gebruikersnaam": "Byte_Bram",
+      "email": "bram@example.com",
+      "land": "Nederland",
+      "aangemaakt_op": "2026-03-01"
+    },
+    {
+      "gebruiker_id": 6,
+      "gebruikersnaam": "ZoëZoom",
+      "email": "zoe@example.com",
+      "land": "België",
+      "aangemaakt_op": "2026-03-18"
+    },
+    {
+      "gebruiker_id": 7,
+      "gebruikersnaam": "GlitchGirl",
+      "email": "sara@example.com",
+      "land": "Duitsland",
+      "aangemaakt_op": "2026-04-02"
+    },
+    {
+      "gebruiker_id": 8,
+      "gebruikersnaam": "TurboTim",
+      "email": "tim@example.com",
+      "land": "Nederland",
+      "aangemaakt_op": "2026-05-09"
+    },
+    {
+      "gebruiker_id": 9,
+      "gebruikersnaam": "MoMoney",
+      "email": "mohammed@example.com",
+      "land": "Nederland",
+      "aangemaakt_op": "2026-06-21"
+    },
+    {
+      "gebruiker_id": 10,
+      "gebruikersnaam": "SilentSam",
+      "email": "sam@example.com",
+      "land": "Duitsland",
+      "aangemaakt_op": "2026-08-30"
+    }
+  ],
+  "highscores": [
+    {
+      "highscore_id": 1,
+      "gebruiker_id": 1,
+      "score": 12450,
+      "level": 7,
+      "gespeeld_op": "2026-09-01 19:12:00"
+    },
+    {
+      "highscore_id": 2,
+      "gebruiker_id": 1,
+      "score": 15890,
+      "level": 9,
+      "gespeeld_op": "2026-09-05 20:45:00"
+    },
+    {
+      "highscore_id": 3,
+      "gebruiker_id": 1,
+      "score": 9870,
+      "level": 5,
+      "gespeeld_op": "2026-09-12 16:03:00"
+    },
+    {
+      "highscore_id": 4,
+      "gebruiker_id": 1,
+      "score": 18320,
+      "level": 10,
+      "gespeeld_op": "2026-09-20 21:30:00"
+    },
+    {
+      "highscore_id": 5,
+      "gebruiker_id": 2,
+      "score": 8760,
+      "level": 4,
+      "gespeeld_op": "2026-09-02 15:20:00"
+    },
+    {
+      "highscore_id": 6,
+      "gebruiker_id": 2,
+      "score": 11200,
+      "level": 6,
+      "gespeeld_op": "2026-09-09 18:44:00"
+    },
+    {
+      "highscore_id": 7,
+      "gebruiker_id": 2,
+      "score": 13050,
+      "level": 7,
+      "gespeeld_op": "2026-09-25 22:10:00"
+    },
+    {
+      "highscore_id": 8,
+      "gebruiker_id": 3,
+      "score": 21400,
+      "level": 12,
+      "gespeeld_op": "2026-09-03 20:00:00"
+    },
+    {
+      "highscore_id": 9,
+      "gebruiker_id": 3,
+      "score": 19870,
+      "level": 11,
+      "gespeeld_op": "2026-09-14 19:35:00"
+    },
+    {
+      "highscore_id": 10,
+      "gebruiker_id": 3,
+      "score": 23990,
+      "level": 13,
+      "gespeeld_op": "2026-09-28 21:05:00"
+    },
+    {
+      "highscore_id": 11,
+      "gebruiker_id": 4,
+      "score": 3150,
+      "level": 2,
+      "gespeeld_op": "2026-09-04 14:12:00"
+    },
+    {
+      "highscore_id": 12,
+      "gebruiker_id": 4,
+      "score": 4210,
+      "level": 2,
+      "gespeeld_op": "2026-09-06 14:55:00"
+    },
+    {
+      "highscore_id": 13,
+      "gebruiker_id": 4,
+      "score": 2890,
+      "level": 1,
+      "gespeeld_op": "2026-09-18 13:40:00"
+    },
+    {
+      "highscore_id": 14,
+      "gebruiker_id": 4,
+      "score": 5020,
+      "level": 3,
+      "gespeeld_op": "2026-09-27 15:15:00"
+    },
+    {
+      "highscore_id": 15,
+      "gebruiker_id": 5,
+      "score": 10500,
+      "level": 6,
+      "gespeeld_op": "2026-09-07 17:25:00"
+    },
+    {
+      "highscore_id": 16,
+      "gebruiker_id": 5,
+      "score": 14780,
+      "level": 8,
+      "gespeeld_op": "2026-09-21 20:18:00"
+    },
+    {
+      "highscore_id": 17,
+      "gebruiker_id": 6,
+      "score": 16640,
+      "level": 9,
+      "gespeeld_op": "2026-09-08 19:50:00"
+    },
+    {
+      "highscore_id": 18,
+      "gebruiker_id": 6,
+      "score": 17010,
+      "level": 9,
+      "gespeeld_op": "2026-09-16 20:22:00"
+    },
+    {
+      "highscore_id": 19,
+      "gebruiker_id": 6,
+      "score": 20550,
+      "level": 11,
+      "gespeeld_op": "2026-09-29 21:48:00"
+    },
+    {
+      "highscore_id": 20,
+      "gebruiker_id": 7,
+      "score": 7340,
+      "level": 4,
+      "gespeeld_op": "2026-09-10 16:30:00"
+    },
+    {
+      "highscore_id": 21,
+      "gebruiker_id": 7,
+      "score": 9980,
+      "level": 5,
+      "gespeeld_op": "2026-09-19 17:05:00"
+    },
+    {
+      "highscore_id": 22,
+      "gebruiker_id": 8,
+      "score": 25480,
+      "level": 14,
+      "gespeeld_op": "2026-09-11 23:15:00"
+    },
+    {
+      "highscore_id": 23,
+      "gebruiker_id": 8,
+      "score": 24100,
+      "level": 13,
+      "gespeeld_op": "2026-09-17 22:40:00"
+    },
+    {
+      "highscore_id": 24,
+      "gebruiker_id": 8,
+      "score": 26900,
+      "level": 15,
+      "gespeeld_op": "2026-09-30 23:55:00"
+    },
+    {
+      "highscore_id": 25,
+      "gebruiker_id": 9,
+      "score": 6120,
+      "level": 3,
+      "gespeeld_op": "2026-09-13 12:10:00"
+    },
+    {
+      "highscore_id": 26,
+      "gebruiker_id": 9,
+      "score": 0,
+      "level": 1,
+      "gespeeld_op": "2026-09-15 12:45:00"
+    },
+    {
+      "highscore_id": 27,
+      "gebruiker_id": 9,
+      "score": 8450,
+      "level": 4,
+      "gespeeld_op": "2026-09-26 13:30:00"
+    }
+  ]
+}
