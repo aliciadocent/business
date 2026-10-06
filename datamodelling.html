@@ -1,4 +1,3 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>SQL Werkplaats</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -171,7 +170,7 @@ footer{color:var(--muted);font-size:14px;padding-top:32px}
 <nav class="toc" aria-label="Hoofdstukken">
   <p class="brand">SQL Werkplaats</p>
   <p class="sub">Semester 1 · databases</p>
-  <div class="progress" id="progressText">0 van 11 hoofdstukken klaar</div>
+  <div class="progress" id="progressText">0 van 12 hoofdstukken klaar</div>
   <div class="bar"><span id="progressBar"></span></div>
   <ol id="tocList">
     <li><a href="#h1"><span class="n">01</span><span>Wat is een database?</span><span class="done"></span></a></li>
@@ -185,6 +184,7 @@ footer{color:var(--muted);font-size:14px;padding-top:32px}
     <li><a href="#h9"><span class="n">09</span><span>UPDATE</span><span class="done"></span></a></li>
     <li><a href="#h10"><span class="n">10</span><span>Supermarkt en relaties</span><span class="done"></span></a></li>
     <li><a href="#h11"><span class="n">11</span><span>Op zoek naar patronen</span><span class="done"></span></a></li>
+    <li><a href="#h12"><span class="n">12</span><span>Koppelen aan je app</span><span class="done"></span></a></li>
   </ol>
 </nav>
 
@@ -203,6 +203,7 @@ footer{color:var(--muted);font-size:14px;padding-top:32px}
     <li><a href="#h9">UPDATE</a></li>
     <li><a href="#h10">Supermarkt en relaties</a></li>
     <li><a href="#h11">Op zoek naar patronen</a></li>
+    <li><a href="#h12">Koppelen aan je app</a></li>
   </ol>
 </details>
 
@@ -210,7 +211,7 @@ footer{color:var(--muted);font-size:14px;padding-top:32px}
 <header class="hero">
   <p class="eyebrow">Semester 1 · eerste kennismaking met databases</p>
   <h1>SQL Werkplaats</h1>
-  <p class="lead">Je zet een MySQL-database op je eigen laptop, vult hem met een game-leaderboard en de kassabonnen van een supermarkt, en leert die data bevragen. Werk de hoofdstukken op volgorde door en vink ze af als je klaar bent.</p>
+  <p class="lead">Je zet een MySQL-database op je eigen laptop, vult hem met een game-leaderboard en de kassabonnen van een supermarkt, en leert die data bevragen. In het laatste hoofdstuk koppel je de database aan je eigen app in C# of Python. Werk de hoofdstukken op volgorde door en vink ze af als je klaar bent.</p>
   <div class="term" aria-label="Voorbeeld van een SQL-query met resultaat">
 <pre><span class="p">mysql&gt;</span> SELECT gebruikersnaam, score FROM highscore
     -&gt; JOIN gebruiker USING (gebruiker_id)
@@ -1209,6 +1210,269 @@ GROUP BY leeftijd;</code></pre></div>
   </div>
 </section>
 
+<!-- ============ 12 ============ -->
+<section class="ch" id="h12">
+  <div class="ch-head"><span class="ch-num">12</span></div>
+  <h2>Je database koppelen aan je app</h2>
+  <p class="intro">Een database wordt pas echt nuttig als je eigen app hem gebruikt. Je app stuurt dezelfde SQL die je in de vorige hoofdstukken schreef, en krijgt de rijen terug als gewone objecten of lijsten.</p>
+
+  <figure class="fig">
+    <svg viewBox="0 0 700 150" role="img" aria-label="Je app praat via een connector met MySQL in de Docker-container">
+      <rect class="box" x="20" y="40" width="170" height="70" rx="6"/>
+      <text class="t" x="36" y="68">Jouw app</text><text class="a" x="36" y="90">C# (WPF) of Python</text>
+      <rect class="box-acc" x="265" y="40" width="170" height="70" rx="6"/>
+      <text class="t" x="281" y="68">Connector</text><text class="a" x="281" y="90">bibliotheek voor MySQL</text>
+      <rect class="box" x="510" y="40" width="170" height="70" rx="6"/>
+      <text class="t" x="526" y="68">MySQL</text><text class="a" x="526" y="90">in container mysql-db</text>
+      <path class="ln" d="M190 75 H265"/><path class="ln" d="M435 75 H510"/>
+      <text class="card-l" x="448" y="64">:3306</text>
+      <text class="capm" x="20" y="138">De app stuurt SQL, de connector brengt het via poort 3306 naar MySQL en geeft de rijen terug.</text>
+    </svg>
+  </figure>
+
+  <p>Het voorbeeld is een leaderboard voor Pixel Runner. De app toont de top 10 uit de database <code>game</code> en kan een nieuwe score opslaan. Je hebt dus de database uit hoofdstuk 5 nodig, en je container moet draaien.</p>
+
+  <h3>Altijd met parameters</h3>
+  <p>Plak nooit invoer van een gebruiker rechtstreeks in je SQL-tekst. Typt iemand als naam <code>x'; DROP TABLE highscore; --</code>, dan voert de database dat gewoon uit. Dit heet <strong>SQL-injectie</strong>. Gebruik daarom parameters: plekken in je SQL die de connector veilig invult. In C# zijn dat <code>@naam</code>, in Python <code>%s</code>.</p>
+
+  <h3>C# met WPF</h3>
+  <ol class="steps">
+    <li><strong>Maak een WPF-project</strong>
+      Kies in Visual Studio <em>WPF Application</em> en noem het project <code>PixelRunner</code>. Kies je een andere naam, pas dan overal <code>namespace PixelRunner</code> aan.</li>
+    <li><strong>Installeer de connector</strong>
+      Rechtsklik op je project → <em>Manage NuGet Packages</em> → zoek en installeer <code>MySqlConnector</code>. Of in de terminal:
+<div class="code"><pre><code class="sh">dotnet add package MySqlConnector</code></pre></div></li>
+    <li><strong>Maak een klasse voor één regel van het leaderboard</strong>
+      Bestand <code>Highscore.cs</code>:
+<div class="code"><pre><code class="cs">namespace PixelRunner;
+
+// Eén regel uit het leaderboard
+public record Highscore(string Gebruikersnaam, int Score, int Level);</code></pre></div></li>
+    <li><strong>Zet alle databasecode in één klasse</strong>
+      Bestand <code>Database.cs</code>. <code>using</code> zorgt ervoor dat de verbinding altijd netjes wordt gesloten.
+<div class="code"><pre><code class="cs">using MySqlConnector;
+
+namespace PixelRunner;
+
+public class Database
+{
+    // Dezelfde gegevens als in je SQL-programma
+    private const string ConnectionString =
+        &quot;Server=localhost;Port=3306;User ID=root;Password=welkom;Database=game&quot;;
+
+    public List&lt;Highscore&gt; HaalTop10()
+    {
+        var lijst = new List&lt;Highscore&gt;();
+
+        using var verbinding = new MySqlConnection(ConnectionString);
+        verbinding.Open();
+
+        using var opdracht = new MySqlCommand(@&quot;
+            SELECT g.gebruikersnaam, h.score, h.level
+            FROM highscore h
+            JOIN gebruiker g ON g.gebruiker_id = h.gebruiker_id
+            ORDER BY h.score DESC
+            LIMIT 10&quot;, verbinding);
+
+        using var lezer = opdracht.ExecuteReader();
+        while (lezer.Read())
+        {
+            lijst.Add(new Highscore(lezer.GetString(0), lezer.GetInt32(1), lezer.GetInt32(2)));
+        }
+        return lijst;
+    }
+
+    public void VoegScoreToe(int gebruikerId, int score, int level)
+    {
+        using var verbinding = new MySqlConnection(ConnectionString);
+        verbinding.Open();
+
+        // @id, @score en @level zijn parameters: MySqlConnector vult ze veilig in
+        using var opdracht = new MySqlCommand(@&quot;
+            INSERT INTO highscore (gebruiker_id, score, level, gespeeld_op)
+            VALUES (@id, @score, @level, NOW())&quot;, verbinding);
+        opdracht.Parameters.AddWithValue(&quot;@id&quot;, gebruikerId);
+        opdracht.Parameters.AddWithValue(&quot;@score&quot;, score);
+        opdracht.Parameters.AddWithValue(&quot;@level&quot;, level);
+        opdracht.ExecuteNonQuery();
+    }
+}</code></pre></div></li>
+    <li><strong>Bouw het venster</strong>
+      Vervang de inhoud van <code>MainWindow.xaml</code>:
+<div class="code"><pre><code class="xml">&lt;Window x:Class=&quot;PixelRunner.MainWindow&quot;
+        xmlns=&quot;http://schemas.microsoft.com/winfx/2006/xaml/presentation&quot;
+        xmlns:x=&quot;http://schemas.microsoft.com/winfx/2006/xaml&quot;
+        Title=&quot;Pixel Runner - Leaderboard&quot; Height=&quot;460&quot; Width=&quot;560&quot;&gt;
+    &lt;Grid Margin=&quot;16&quot;&gt;
+        &lt;Grid.RowDefinitions&gt;
+            &lt;RowDefinition Height=&quot;*&quot;/&gt;
+            &lt;RowDefinition Height=&quot;Auto&quot;/&gt;
+        &lt;/Grid.RowDefinitions&gt;
+
+        &lt;!-- De top 10 uit de database --&gt;
+        &lt;DataGrid x:Name=&quot;LeaderboardGrid&quot; AutoGenerateColumns=&quot;False&quot; IsReadOnly=&quot;True&quot;&gt;
+            &lt;DataGrid.Columns&gt;
+                &lt;DataGridTextColumn Header=&quot;Speler&quot; Binding=&quot;{Binding Gebruikersnaam}&quot; Width=&quot;*&quot;/&gt;
+                &lt;DataGridTextColumn Header=&quot;Score&quot;  Binding=&quot;{Binding Score}&quot;          Width=&quot;100&quot;/&gt;
+                &lt;DataGridTextColumn Header=&quot;Level&quot;  Binding=&quot;{Binding Level}&quot;          Width=&quot;80&quot;/&gt;
+            &lt;/DataGrid.Columns&gt;
+        &lt;/DataGrid&gt;
+
+        &lt;!-- Een nieuwe score invoeren --&gt;
+        &lt;StackPanel Grid.Row=&quot;1&quot; Orientation=&quot;Horizontal&quot; Margin=&quot;0,12,0,0&quot;&gt;
+            &lt;TextBlock Text=&quot;Gebruiker-id&quot; VerticalAlignment=&quot;Center&quot; Margin=&quot;0,0,6,0&quot;/&gt;
+            &lt;TextBox x:Name=&quot;GebruikerIdBox&quot; Width=&quot;50&quot; Margin=&quot;0,0,12,0&quot;/&gt;
+            &lt;TextBlock Text=&quot;Score&quot; VerticalAlignment=&quot;Center&quot; Margin=&quot;0,0,6,0&quot;/&gt;
+            &lt;TextBox x:Name=&quot;ScoreBox&quot; Width=&quot;70&quot; Margin=&quot;0,0,12,0&quot;/&gt;
+            &lt;TextBlock Text=&quot;Level&quot; VerticalAlignment=&quot;Center&quot; Margin=&quot;0,0,6,0&quot;/&gt;
+            &lt;TextBox x:Name=&quot;LevelBox&quot; Width=&quot;40&quot; Margin=&quot;0,0,12,0&quot;/&gt;
+            &lt;Button Content=&quot;Opslaan&quot; Click=&quot;Opslaan_Click&quot; Padding=&quot;12,4&quot;/&gt;
+        &lt;/StackPanel&gt;
+    &lt;/Grid&gt;
+&lt;/Window&gt;</code></pre></div></li>
+    <li><strong>Koppel venster en database</strong>
+      Vervang de inhoud van <code>MainWindow.xaml.cs</code>:
+<div class="code"><pre><code class="cs">using System.Windows;
+using MySqlConnector;
+
+namespace PixelRunner;
+
+public partial class MainWindow : Window
+{
+    private readonly Database _database = new Database();
+
+    public MainWindow()
+    {
+        InitializeComponent();
+        LaadLeaderboard();
+    }
+
+    private void LaadLeaderboard()
+    {
+        try
+        {
+            LeaderboardGrid.ItemsSource = _database.HaalTop10();
+        }
+        catch (MySqlException ex)
+        {
+            MessageBox.Show(&quot;Geen verbinding met de database. Draait je container?\n\n&quot; + ex.Message);
+        }
+    }
+
+    private void Opslaan_Click(object sender, RoutedEventArgs e)
+    {
+        if (!int.TryParse(GebruikerIdBox.Text, out int gebruikerId) ||
+            !int.TryParse(ScoreBox.Text, out int score) ||
+            !int.TryParse(LevelBox.Text, out int level))
+        {
+            MessageBox.Show(&quot;Vul bij alle drie de velden een heel getal in.&quot;);
+            return;
+        }
+
+        try
+        {
+            _database.VoegScoreToe(gebruikerId, score, level);
+            LaadLeaderboard();   // lijst opnieuw ophalen, met de nieuwe score erin
+        }
+        catch (MySqlException ex)
+        {
+            MessageBox.Show(&quot;Opslaan mislukt: &quot; + ex.Message);
+        }
+    }
+}</code></pre></div></li>
+    <li><strong>Start de app</strong>
+      Druk op <kbd>F5</kbd>. Je ziet de top 10. Vul gebruiker-id 5, score 30000 en level 16 in en klik op <em>Opslaan</em>: Byte_Bram staat bovenaan.</li>
+  </ol>
+  <div class="note"><strong>WPF werkt alleen op Windows</strong><p>Werk je op een Mac? Gebruik dan het Python-voorbeeld hieronder. De klassen <code>Highscore</code> en <code>Database</code> werken ook in een C#-console-app of in .NET MAUI.</p></div>
+
+  <h3>Python</h3>
+  <ol class="steps">
+    <li><strong>Installeer de connector</strong>
+      Op de Mac gebruik je <code>pip3</code> in plaats van <code>pip</code>.
+<div class="code"><pre><code class="sh">pip install mysql-connector-python</code></pre></div></li>
+    <li><strong>Maak het bestand <code>leaderboard.py</code></strong>
+<div class="code"><pre><code class="py">import mysql.connector
+
+# 1. Verbinding maken met de database in je Docker-container
+db = mysql.connector.connect(
+    host=&quot;localhost&quot;,
+    port=3306,
+    user=&quot;root&quot;,
+    password=&quot;welkom&quot;,
+    database=&quot;game&quot;,
+)
+cursor = db.cursor()
+
+
+def toon_top10():
+    cursor.execute(&quot;&quot;&quot;
+        SELECT g.gebruikersnaam, h.score, h.level
+        FROM highscore h
+        JOIN gebruiker g ON g.gebruiker_id = h.gebruiker_id
+        ORDER BY h.score DESC
+        LIMIT 10
+    &quot;&quot;&quot;)
+    print(&quot;\n  #  Speler           Score  Level&quot;)
+    for nr, (naam, score, level) in enumerate(cursor.fetchall(), start=1):
+        print(f&quot;{nr:&gt;3}  {naam:&lt;15} {score:&gt;6}  {level:&gt;5}&quot;)
+
+
+def voeg_score_toe(gebruiker_id, score, level):
+    # %s zijn plekken voor waarden: de connector vult ze veilig in
+    cursor.execute(
+        &quot;INSERT INTO highscore (gebruiker_id, score, level, gespeeld_op) &quot;
+        &quot;VALUES (%s, %s, %s, NOW())&quot;,
+        (gebruiker_id, score, level),
+    )
+    db.commit()  # pas na commit staat de wijziging echt in de database
+    print(f&quot;Score {score} opgeslagen.&quot;)
+
+
+toon_top10()
+gebruiker_id = int(input(&quot;\nJouw gebruiker_id: &quot;))
+score = int(input(&quot;Je score: &quot;))
+level = int(input(&quot;Je level: &quot;))
+try:
+    voeg_score_toe(gebruiker_id, score, level)
+except mysql.connector.Error as fout:
+    print(f&quot;Opslaan mislukt: {fout.msg}&quot;)
+toon_top10()
+
+cursor.close()
+db.close()</code></pre></div></li>
+    <li><strong>Start het script</strong>
+      Op de Mac gebruik je <code>python3</code>.
+<div class="code"><pre><code class="sh">python leaderboard.py</code></pre></div></li>
+  </ol>
+  <div class="note"><strong>Vergeet commit niet</strong><p>Python bundelt wijzigingen tot je <code>db.commit()</code> aanroept. Zonder commit lijkt je INSERT gelukt, maar staat de score niet echt in de database. MySqlConnector in C# slaat elke opdracht direct op.</p></div>
+
+  <h3>Als het niet lukt</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Melding</th><th>Oplossing</th></tr></thead>
+    <tbody>
+      <tr><td><code>Unable to connect to any of the specified MySQL hosts</code> (C#) of <code>Can't connect to MySQL server on 'localhost:3306'</code> (Python)</td><td>Je container draait niet. Start hem met <code>docker start mysql-db</code>. Heb je in hoofdstuk 2 poort 3307 gekozen? Pas dan de poort in je code aan.</td></tr>
+      <tr><td><code>Unknown database 'game'</code></td><td>Doe eerst hoofdstuk 5.</td></tr>
+      <tr><td><code>Access denied for user 'root'</code></td><td>Het wachtwoord in je code klopt niet met het wachtwoord van je container.</td></tr>
+      <tr><td><code>a foreign key constraint fails</code></td><td>Die gebruiker-id bestaat niet. Kijk in de tabel <code>gebruiker</code> welke id's er zijn.</td></tr>
+      <tr><td><code>ModuleNotFoundError: No module named 'mysql'</code></td><td>De connector is niet geïnstalleerd voor deze Python. Probeer <code>python -m pip install mysql-connector-python</code>.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="warn"><strong>Alleen om te oefenen</strong><p>Een wachtwoord in je code en inloggen als root zijn prima op je eigen laptop. In een echte app maak je een aparte databasegebruiker met alleen de rechten die de app nodig heeft, en staat het wachtwoord niet in de code.</p></div>
+
+  <div class="practice">
+    <h3>Oefenen</h3>
+    <ol class="ex">
+      <li><p>Laat je app alleen de scores van één land zien. Welke regel in je SQL pas je aan?</p>
+        <details class="ans"><summary>Antwoord</summary><div><p>Voeg een <code>WHERE</code> toe vóór <code>ORDER BY</code>, met een parameter voor het land: <code>WHERE g.land = @land</code> in C#, <code>WHERE g.land = %s</code> in Python. Geef het land mee zoals bij de INSERT.</p></div></details></li>
+      <li><p>Waarom schrijf je niet <code>"... VALUES (" + score + ")"</code> in je code?</p>
+        <details class="ans"><summary>Antwoord</summary><div><p>Dan wordt invoer van de gebruiker deel van je SQL. Met slimme invoer kan iemand dan eigen SQL laten uitvoeren (SQL-injectie). Parameters houden invoer en SQL gescheiden.</p></div></details></li>
+      <li><p>Breid de app uit: toon naast de top 10 ook het aantal gespeelde potjes per speler.</p>
+        <details class="ans"><summary>Tip</summary><div><p>Schrijf en test de query eerst in je SQL-programma. Gebruik <code>COUNT(*)</code> en <code>GROUP BY g.gebruikersnaam</code>, zoals in hoofdstuk 11. Werkt hij daar, zet hem dan in je app.</p></div></details></li>
+    </ol>
+    <label class="donebox"><input type="checkbox" id="done-h12" data-ch="h12"> Hoofdstuk 12 klaar</label>
+  </div>
+</section>
+
 <footer>SQL Werkplaats · Fontys ICT · Semester 1. Getest met MySQL 8. De supermarktdata is fictief.</footer>
 </div>
 </main>
@@ -1240,7 +1504,7 @@ GROUP BY leeftijd;</code></pre></div>
   // ---------- kopieerknoppen ----------
   document.querySelectorAll(".code").forEach(function(box){
     var code = box.querySelector("code");
-    var lang = code.className === "sh" ? "terminal" : code.className;
+    var lang = ({sh:"terminal", cs:"C#", xml:"XAML", py:"Python", json:"JSON", sql:"SQL"})[code.className] || code.className;
     var tag = document.createElement("span"); tag.className = "lang"; tag.textContent = lang;
     var b = document.createElement("button"); b.type = "button"; b.className = "copy"; b.textContent = "Kopieer";
     b.addEventListener("click", function(){
@@ -1269,8 +1533,8 @@ GROUP BY leeftijd;</code></pre></div>
       var link = document.querySelector('#tocList a[href="#' + cb.dataset.ch + '"] .done');
       if (link) link.textContent = on ? "✓" : "";
     });
-    document.getElementById("progressText").textContent = n + " van 11 hoofdstukken klaar";
-    document.getElementById("progressBar").style.width = (n / 11 * 100) + "%";
+    document.getElementById("progressText").textContent = n + " van 12 hoofdstukken klaar";
+    document.getElementById("progressBar").style.width = (n / 12 * 100) + "%";
   }
   boxes.forEach(function(cb){
     cb.addEventListener("change", function(){
@@ -1318,5 +1582,3 @@ GROUP BY leeftijd;</code></pre></div>
   });
 })();
 </script>
-
-</body></html>
