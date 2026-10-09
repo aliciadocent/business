@@ -1,0 +1,344 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Design Thinking Field Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/* Layout: one reading column; the double diamond is the hero, the week is mapped onto it, then rules + rhythm as quick-reference blocks. Palette follows the BIP programme (plum + magenta). */
+:root{
+  --bg:#fbf8fb; --surface:#ffffff; --tint:#f3ecf3;
+  --ink:#2a1b2c; --muted:#6b5a6d; --line:#e2d6e3;
+  --plum:#5b2a63; --plum-2:#7c3d86; --magenta:#d10a7a; --magenta-soft:#fde3f1;
+  --diverge:#7c3d86; --converge:#3f1d47; --on-dark:#ffffff;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#181119; --surface:#221824; --tint:#2b1f2e;
+  --ink:#f3e9f4; --muted:#bba9bd; --line:#3d2e40;
+  --plum:#d7a8df; --plum-2:#b77fc2; --magenta:#ff5cae; --magenta-soft:#3d1830;
+  --diverge:#8e4c99; --converge:#4f2659; --on-dark:#ffffff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#181119; --surface:#221824; --tint:#2b1f2e;
+  --ink:#f3e9f4; --muted:#bba9bd; --line:#3d2e40;
+  --plum:#d7a8df; --plum-2:#b77fc2; --magenta:#ff5cae; --magenta-soft:#3d1830;
+  --diverge:#8e4c99; --converge:#4f2659; --on-dark:#ffffff; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6}
+.wrap{max-width:1040px;margin:0 auto;padding-inline:20px;padding-block:40px 64px;display:flex;flex-direction:column;gap:56px}
+h1,h2,h3{font-family:var(--display);line-height:1.12;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.1rem,5.5vw,3.4rem);font-weight:800;letter-spacing:-.02em;color:var(--plum)}
+h2{font-size:clamp(1.5rem,3.2vw,2rem);font-weight:700}
+h3{font-size:1.15rem;font-weight:700}
+p{margin:0;max-width:65ch}
+.eyebrow{font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--magenta)}
+.lede{font-size:1.2rem;color:var(--muted)}
+header{display:flex;flex-direction:column;gap:14px}
+section{display:flex;flex-direction:column;gap:18px}
+
+/* Hero diagram */
+.diagram{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 12px}
+.diagram svg{display:block;width:100%;min-width:640px;height:auto}
+.d-div{fill:var(--diverge)} .d-con{fill:var(--converge)}
+.d-lbl{fill:var(--on-dark);font-family:var(--display);font-weight:700;font-size:20px}
+.d-sub{fill:var(--on-dark);font-family:var(--body);font-size:14px;opacity:.9}
+.d-axis{stroke:var(--muted);stroke-width:2}
+.d-txt{fill:var(--ink);font-family:var(--display);font-weight:700;font-size:15px}
+.d-pin{fill:var(--magenta)}
+.d-pintxt{fill:var(--magenta);font-family:var(--body);font-weight:700;font-size:14px}
+.d-hmw{fill:var(--magenta);font-family:var(--display);font-weight:800;font-size:18px}
+.hmw{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.hmw > div{min-width:0;display:flex;flex-direction:column;gap:10px}
+.hmw ol,.hmw ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
+.formula{font-family:var(--display);font-weight:700;font-size:1.25rem;color:var(--plum);background:var(--tint);border-radius:10px;padding:16px 18px}
+.formula em{color:var(--magenta);font-style:normal}
+.ex{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.ex li .bad{color:var(--muted);text-decoration:line-through}
+.core{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px;max-width:65ch}
+.videos{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.video{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);text-decoration:none;min-width:0}
+.video:hover,.video:focus-visible{border-color:var(--magenta);outline:none}
+.video small{display:block;color:var(--muted);font-size:.85rem}
+.play{flex:none;width:40px;height:40px;border-radius:50%;background:var(--magenta);position:relative}
+.play::after{content:"";position:absolute;left:16px;top:12px;border-left:12px solid var(--on-dark);border-top:8px solid transparent;border-bottom:8px solid transparent}
+.stages{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:var(--line)}
+.stages li{display:flex;gap:16px;padding:18px;background:var(--surface)}
+.stages li > div{min-width:0;display:flex;flex-direction:column;gap:4px}
+.stages .n{flex:none;width:36px;height:36px;border-radius:50%;background:var(--plum);color:var(--bg);font-family:var(--display);font-weight:800;display:grid;place-items:center}
+.stages em{color:var(--magenta);font-style:normal;font-weight:600}
+.map{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+.map-row{display:grid;grid-template-columns:1.2fr .8fr 1.4fr;gap:12px;padding:12px 16px;border-top:1px solid var(--line);align-items:center}
+.map-row:first-child{border-top:0}
+.map-row.head{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--muted);background:var(--tint)}
+.map-row .dd{font-family:var(--display);font-weight:700;color:var(--plum)}
+.map-row .m{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--magenta)}
+.map-row .st{font-weight:600}
+.map-row.bridge{background:var(--magenta-soft)}
+.map-row > span{min-width:0}
+@media (max-width:520px){.map-row{grid-template-columns:1fr 1fr}.map-row .m{display:none}}
+.crazy{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:620px){.crazy{grid-template-columns:1fr}}
+.sheet{display:grid;grid-template-columns:repeat(4,1fr);aspect-ratio:1.414/1;max-width:100%;border:2px solid var(--plum);border-radius:4px;background:var(--surface)}
+.sheet span{border:1px dashed var(--line);display:grid;place-items:center;font-family:var(--display);font-weight:800;color:var(--plum-2);font-size:1.2rem}
+.steps{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:8px}
+.planning{margin:0;display:flex;flex-direction:column;gap:8px}
+.planning img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px}
+.planning figcaption{font-size:.88rem;color:var(--muted)}
+.d-day{fill:var(--tint);stroke:var(--line)}
+.d-daytxt{fill:var(--ink);font-family:var(--body);font-weight:700;font-size:13px}
+.d-daysub{fill:var(--muted);font-family:var(--body);font-size:12px}
+.d-loop{fill:none;stroke:var(--magenta);stroke-width:2;stroke-dasharray:6 5}
+
+/* Two ideas */
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.pair > div{min-width:0;display:flex;flex-direction:column;gap:10px;padding:22px;border-top:4px solid var(--plum-2);background:var(--surface)}
+.pair > div.con{border-top-color:var(--converge)}
+.pair ul{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:4px}
+.tag{align-self:flex-start;font-size:.8rem;font-weight:700;padding:2px 10px;border-radius:99px;background:var(--tint);color:var(--plum)}
+
+/* Phases table */
+.phases{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:.98rem}
+th,td{text-align:left;vertical-align:top;padding:14px 12px;border-bottom:1px solid var(--line)}
+th{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+td:first-child{font-family:var(--display);font-weight:700;font-size:1.1rem;color:var(--plum);white-space:nowrap}
+td .mode{display:block;font-family:var(--body);font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--magenta)}
+.out{font-weight:600}
+
+/* Mindsets */
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.rules div{background:var(--surface);padding:18px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.rules p{color:var(--muted);font-size:.95rem}
+
+/* Check-in */
+.checkin{background:var(--plum);color:var(--on-dark);border-radius:14px;padding:28px;display:flex;flex-direction:column;gap:16px}
+:root[data-theme="dark"] .checkin{background:var(--converge)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .checkin{background:var(--converge)}}
+.checkin h2{color:var(--on-dark)}
+.qs{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.qs div{border:1px solid rgba(255,255,255,.3);border-radius:10px;padding:14px 16px;font-family:var(--display);font-weight:700;font-size:1.15rem;min-width:0}
+.qs span{display:block;font-family:var(--body);font-weight:400;font-size:.92rem;opacity:.85;margin-top:4px}
+
+.trap{background:var(--magenta-soft);border-left:4px solid var(--magenta);padding:18px 20px;border-radius:0 10px 10px 0}
+.trap ul{margin:6px 0 0;padding-left:1.1em}
+footer{font-size:.85rem;color:var(--muted)}
+</style>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">BIP · Build Resilient Supply Chains</span>
+  <h1>Design thinking in one week</h1>
+  <p class="lede">You have five days to go from a messy supply chain problem to a tested resilience plan. Design thinking is the way of working that gets you there. The double diamond is the map.</p>
+</header>
+
+<section>
+  <h2>What is design thinking?</h2>
+  <p>Design thinking is a human-centred way to solve complex problems. Designers developed it, but today companies, hospitals and governments use it for problems that have no obvious answer, such as making a supply chain survive a disruption.</p>
+  <p>Three ideas sit at its core:</p>
+  <ul class="core">
+    <li><strong>People first.</strong> You start with the people who feel the problem, not with a solution you already like.</li>
+    <li><strong>Make it tangible early.</strong> A rough sketch or mock-up teaches you more than a long discussion.</li>
+    <li><strong>Learn by testing.</strong> You test with real users, and the results often send you back to an earlier stage. It is a loop, not a straight line.</li>
+  </ul>
+  <div class="videos">
+    <a class="video" href="https://www.youtube.com/watch?v=_WI3B54m6SU" target="_blank" rel="noopener"><span class="play" aria-hidden="true"></span><span><strong>Watch: design thinking and its stages</strong><small>YouTube · watch before Monday</small></span></a>
+    <a class="video" href="https://www.youtube.com/watch?v=w0_-1RqBK_0" target="_blank" rel="noopener"><span class="play" aria-hidden="true"></span><span><strong>Watch: more on design thinking</strong><small>YouTube</small></span></a>
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">The five stages</span>
+  <h2>Empathize, Define, Ideate, Prototype, Test</h2>
+  <p>The Stanford d.school describes design thinking in five stages. They are the steps you will take this week.</p>
+  <ol class="stages">
+    <li><span class="n">1</span><div><h3>Empathize</h3><p>Understand the people involved. Interview, observe and listen without judging. What do the buyer, planner, supplier and logistics staff experience when something goes wrong? <em>This week: Monday.</em></p></div></li>
+    <li><span class="n">2</span><div><h3>Define</h3><p>Make sense of everything you collected. Find patterns and decide what the real problem is. Write a problem statement and turn it into a “How might we …?” question. <em>This week: Tuesday morning.</em></p></div></li>
+    <li><span class="n">3</span><div><h3>Ideate</h3><p>Generate as many ideas as possible for your HMW question, then choose the most promising one. Quantity first, quality later. <em>This week: Tuesday afternoon.</em></p></div></li>
+    <li><span class="n">4</span><div><h3>Prototype</h3><p>Make your idea tangible, quickly and cheaply: a dashboard mock-up, a storyboard, a physical model or a simple simulation. A prototype is a question you can show to people. <em>This week: Wednesday.</em></p></div></li>
+    <li><span class="n">5</span><div><h3>Test</h3><p>Put the prototype in front of users and under pressure. What works, what breaks, what surprises you? Use the feedback to improve, or go back to an earlier stage. <em>This week: Thursday, then Friday you turn it into a plan.</em></p></div></li>
+  </ol>
+</section>
+
+<section>
+  <h2>The double diamond</h2>
+  <p>The double diamond was developed by the UK Design Council. Two diamonds, two questions. The first diamond is about <strong>finding the right problem</strong>. The second is about <strong>finding the right solution</strong>. Each diamond first opens up (diverge) and then narrows down (converge).</p>
+  <div class="diagram" role="img" aria-label="Double diamond mapped onto the week: Monday Discover, Tuesday Define then ideate, Wednesday Prototype, Thursday Test, Friday Deliver.">
+    <svg viewBox="0 0 1000 420"xmlns="http://www.w3.org/2000/svg">
+      <text class="d-txt" x="40" y="24">Problem space</text>
+      <text class="d-txt" x="540" y="24">Solution space</text>
+      <polygon class="d-div" points="40,150 250,45 250,255"/>
+      <polygon class="d-con" points="250,45 460,150 250,255"/>
+      <polygon class="d-div" points="540,150 750,45 750,255"/>
+      <polygon class="d-con" points="750,45 960,150 750,255"/>
+      <text class="d-lbl" x="175" y="146" text-anchor="middle">Discover</text>
+      <text class="d-sub" x="175" y="168" text-anchor="middle">diverge</text>
+      <text class="d-lbl" x="325" y="146" text-anchor="middle">Define</text>
+      <text class="d-sub" x="325" y="168" text-anchor="middle">converge</text>
+      <text class="d-lbl" x="675" y="146" text-anchor="middle">Develop</text>
+      <text class="d-sub" x="675" y="168" text-anchor="middle">diverge</text>
+      <text class="d-lbl" x="825" y="146" text-anchor="middle">Deliver</text>
+      <text class="d-sub" x="825" y="168" text-anchor="middle">converge</text>
+      <line class="d-axis" x1="460" y1="150" x2="540" y2="150"/>
+      <circle class="d-pin" cx="500" cy="150" r="9"/>
+      <text class="d-daysub" x="500" y="284" text-anchor="middle">Problem statement</text>
+      <text class="d-hmw" x="500" y="306" text-anchor="middle">“How might we …?”</text>
+      <line class="d-axis" x1="500" y1="159" x2="500" y2="268" stroke-dasharray="3 4"/>
+      <path class="d-loop" d="M 820 262 C 790 365, 410 365, 330 262"/>
+      <text class="d-pintxt" x="575" y="364" text-anchor="middle">test results feed back</text>
+      <rect class="d-day" x="40" y="380" width="206" height="36" rx="6"/>
+      <text class="d-daytxt" x="52" y="403">Mon · Empathize</text>
+      <rect class="d-day" x="250" y="380" width="392" height="36" rx="6"/>
+      <text class="d-daytxt" x="262" y="403">Tue · Define → HMW → Ideate</text>
+      <rect class="d-day" x="646" y="380" width="100" height="36" rx="6"/>
+      <text class="d-daytxt" x="656" y="403">Wed · Build</text>
+      <rect class="d-day" x="750" y="380" width="104" height="36" rx="6"/>
+      <text class="d-daytxt" x="760" y="403">Thu · Test</text>
+      <rect class="d-day" x="858" y="380" width="102" height="36" rx="6"/>
+      <text class="d-daytxt" x="868" y="403">Fri · Plan</text>
+    </svg>
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">How they fit together</span>
+  <h2>Design thinking and the double diamond</h2>
+  <p>Design thinking and the double diamond describe the same way of working from two angles. The <strong>five stages</strong> tell you <em>what to do</em>. The <strong>double diamond</strong> shows <em>how your thinking moves</em>: when to open up and when to make choices. Think of the diamond as the map and the stages as the route.</p>
+  <div class="map">
+    <div class="map-row head"><span>Double diamond</span><span>Thinking mode</span><span>Design thinking stage</span></div>
+    <div class="map-row"><span class="dd">Discover</span><span class="m">diverge</span><span class="st">Empathize</span></div>
+    <div class="map-row"><span class="dd">Define</span><span class="m">converge</span><span class="st">Define</span></div>
+    <div class="map-row bridge"><span class="dd">Between the diamonds</span><span class="m">switch</span><span class="st">“How might we …?” question</span></div>
+    <div class="map-row"><span class="dd">Develop</span><span class="m">diverge</span><span class="st">Ideate + Prototype</span></div>
+    <div class="map-row"><span class="dd">Deliver</span><span class="m">converge</span><span class="st">Test + implement (your plan)</span></div>
+  </div>
+  <p>In practice the line is not perfectly straight. Testing on Thursday might show that you defined the problem too narrowly. Then you go back to the first diamond. That is not failure; that is design thinking doing its job.</p>
+</section>
+
+<section>
+  <span class="eyebrow">The bridge between the diamonds</span>
+  <h2>From problem to “How might we …?”</h2>
+  <p>At the end of the first diamond you have a clear problem statement. Before you start generating ideas, you turn that problem into a <strong>How Might We (HMW) question</strong>. It flips a problem into an open invitation for ideas. “How” says a solution exists, “might” says it is fine to explore, “we” says you do it together.</p>
+  <div class="hmw">
+    <div>
+      <div class="formula">How might we <em>[action]</em> for <em>[who]</em> so that <em>[desired outcome]</em>?</div>
+      <h3>A good HMW question</h3>
+      <ul>
+        <li>Comes straight from your interviews and problem statement</li>
+        <li>Names a real person or role in the chain</li>
+        <li>Does not contain a solution yet</li>
+        <li>Is not too broad and not too narrow</li>
+      </ul>
+    </div>
+    <div class="ex">
+      <h3>Examples from a supply chain</h3>
+      <ul>
+        <li><span class="bad">How might we build a dashboard for the planner?</span> Too narrow: the solution is already in it.</li>
+        <li><span class="bad">How might we make the supply chain better?</span> Too broad: where do you start?</li>
+        <li><strong>How might we help the planner notice a supplier problem days earlier, so that production keeps running?</strong></li>
+        <li><strong>How might we keep deliveries going when our only port is closed for a week?</strong></li>
+      </ul>
+    </div>
+  </div>
+  <p><strong>Tip:</strong> write 5 to 10 HMW questions as a team, then vote on the one you will use for ideation. Your Crazy 8s on Tuesday afternoon start from that question.</p>
+</section>
+
+<section>
+  <span class="eyebrow">Ideation method · Tuesday afternoon</span>
+  <h2>Crazy 8s</h2>
+  <p>Crazy 8s is a fast sketching exercise: <strong>8 ideas in 8 minutes</strong>, one minute per idea. The time pressure stops you from overthinking and pushes you past your first, most obvious idea. Ideas 5 to 8 are often the most interesting ones.</p>
+  <div class="crazy">
+    <div class="sheet" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span></div>
+    <ol class="steps">
+      <li><strong>Fold</strong> an A4 sheet three times so you get 8 boxes. Everyone gets their own sheet and a marker.</li>
+      <li><strong>Write your HMW question</strong> at the top so everyone works on the same challenge.</li>
+      <li><strong>Set a timer for 8 minutes.</strong> Sketch one idea per box, one minute each. Work silently and alone.</li>
+      <li><strong>Sketch, don’t write essays.</strong> Simple drawings, arrows and a few keywords. Nobody is judged on drawing skills.</li>
+      <li><strong>Share.</strong> Each person presents their sheet in about 1 minute per person. No discussion yet.</li>
+      <li><strong>Vote.</strong> Everyone places dot stickers on the ideas they like most. Then place the top ideas on an impact/effort grid and choose your concept.</li>
+    </ol>
+  </div>
+  <p><strong>Example</strong> for “How might we keep deliveries going when our only port is closed for a week?”: a second port contract, a buffer stock near the factory, a rail alternative, an early-warning alert from the shipping company, a shared warehouse with a competitor, and more.</p>
+</section>
+
+<section>
+  <h2>Two modes of thinking</h2>
+  <p>Most teams get stuck because they mix these modes. Agree as a team which mode you are in.</p>
+  <div class="pair">
+    <div>
+      <span class="tag">Diverge · open up</span>
+      <h3>Go for quantity</h3>
+      <ul>
+        <li>Talk to many stakeholders, collect many stories</li>
+        <li>No judging yet, every idea is written down</li>
+        <li>Build on each other: “yes, and…”</li>
+        <li>Wild ideas are welcome</li>
+      </ul>
+    </div>
+    <div class="con">
+      <span class="tag">Converge · narrow down</span>
+      <h3>Make choices</h3>
+      <ul>
+        <li>Cluster, prioritise and score</li>
+        <li>Use criteria: impact, effort, risk</li>
+        <li>Choose one direction and commit</li>
+        <li>Write down why you chose it</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Your week, phase by phase</h2>
+  <figure class="planning">
+    <a href="week-planning.jpg" target="_blank" rel="noopener"><img src="week-planning.jpg" alt="Week planning of the BIP Build Resilient Supply Chains: Monday Empathize, Tuesday Define and Ideate, Wednesday Prototype, Thursday Test and Iterate, Friday Plan and Present, with the daily rhythm from 09:00 check-in to 16:30 stand-up." width="2000" height="1414"></a>
+    <figcaption>The full week programme. Open the image to zoom in.</figcaption>
+  </figure>
+  <div class="phases">
+    <table>
+      <thead><tr><th>Phase</th><th>Day</th><th>Key question</th><th>Methods</th><th>Output</th></tr></thead>
+      <tbody>
+        <tr><td>Discover<span class="mode">diverge</span></td><td>Monday</td><td>Who feels it when the chain breaks?</td><td>Stakeholder map, interviews, empathy map, disruption stories</td><td class="out">Empathy maps + as-is chain map</td></tr>
+        <tr><td>Define<span class="mode">converge</span></td><td>Tuesday morning</td><td>Where is the chain really vulnerable?</td><td>SIPOC, single points of failure, risk heatmap, “How might we…?”</td><td class="out">Problem statement + chosen HMW question</td></tr>
+        <tr><td>Develop<span class="mode">diverge</span></td><td>Tuesday afternoon + Wednesday</td><td>What could the solution look like?</td><td>Crazy 8s, impact/effort, storyboard, paper prototype, simple simulation</td><td class="out">Chosen concept + working prototype</td></tr>
+        <tr><td>Deliver<span class="mode">converge</span></td><td>Thursday + Friday</td><td>Does it hold up during a disruption?</td><td>Disruption cards, feedback grid, test log, roadmap, business case</td><td class="out">Tested resilience plan + pitch</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>Mindsets for the week</h2>
+  <div class="rules">
+    <div><h3>Start with people</h3><p>The buyer, planner, supplier and truck driver know things you don’t. Ask, listen, write it down.</p></div>
+    <div><h3>Fall in love with the problem</h3><p>Not with your first idea. A good problem statement saves you days.</p></div>
+    <div><h3>Show, don’t tell</h3><p>A sketch or a rough mock-up gets better feedback than a long explanation.</p></div>
+    <div><h3>Fail early and cheap</h3><p>Wednesday’s prototype is meant to be broken on Thursday. That is the point.</p></div>
+    <div><h3>Use every perspective</h3><p>Your team is international on purpose. Different backgrounds mean more ideas in the diverge phases.</p></div>
+  </div>
+</section>
+
+<div class="checkin">
+  <span class="eyebrow" style="color:inherit;opacity:.8">Every day at 09:00 and 16:30</span>
+  <h2>The three check-in questions</h2>
+  <div class="qs">
+    <div>What do we know?<span>Facts from interviews, data and the company.</span></div>
+    <div>What do we assume?<span>Things we believe but have not checked yet.</span></div>
+    <div>What will we test?<span>The next assumption we turn into knowledge.</span></div>
+  </div>
+</div>
+
+<div class="trap">
+  <h3>Common traps</h3>
+  <ul>
+    <li>Jumping to a solution on Monday (“we just need a dashboard”).</li>
+    <li>Diverging forever and never choosing.</li>
+    <li>Polishing a prototype instead of testing it.</li>
+    <li>Ignoring test results that don’t fit your plan.</li>
+  </ul>
+</div>
+
+<footer>Based on the Double Diamond (UK Design Council) and the five design thinking modes of the Stanford d.school. Fontys University of Applied Sciences.</footer>
+</div>
+
+</body></html>

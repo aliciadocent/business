@@ -4,9 +4,10 @@
 -- Voer dit bestand uit als één script.
 -- LET OP: bestaat 'game' al, dan wordt hij eerst verwijderd.
 -- =============================================================
-SET NAMES utf8mb4;
 DROP DATABASE IF EXISTS game;
+
 CREATE DATABASE game;
+
 USE game;
 
 CREATE TABLE gebruiker (

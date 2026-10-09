@@ -4,9 +4,10 @@
 -- Voer dit bestand uit als één script. Duurt een paar seconden.
 -- LET OP: bestaat 'supermarkt' al, dan wordt hij eerst verwijderd.
 -- =============================================================
-SET NAMES utf8mb4;
 DROP DATABASE IF EXISTS supermarkt;
+
 CREATE DATABASE supermarkt;
+
 USE supermarkt;
 
 CREATE TABLE klanten (
